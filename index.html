@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Ice Timer Editor</title>
+  <title>Ice Timer Sparkle Editor</title>
   <style>
     :root{
       color-scheme: dark;
@@ -11,7 +11,7 @@
       margin:0;
       padding:20px;
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:#0a0b16;
+      background:#050615;
       color:#f5f5ff;
     }
     h1{
@@ -25,10 +25,10 @@
       flex-wrap:wrap;
     }
     .panel{
-      background:#141527;
-      border-radius:14px;
+      background:#111325;
+      border-radius:16px;
       padding:14px 16px;
-      box-shadow:0 0 24px #0000009c;
+      box-shadow:0 0 24px #000000c5;
     }
     .controls{
       width:360px;
@@ -65,8 +65,8 @@
       box-sizing:border-box;
       padding:6px 8px;
       border-radius:6px;
-      border:1px solid #414369;
-      background:#090a18;
+      border:1px solid #40436a;
+      background:#070716;
       color:#f5f5ff;
       font-size:0.85rem;
     }
@@ -75,8 +75,8 @@
       height:32px;
       padding:0;
       border-radius:6px;
-      border:1px solid #414369;
-      background:#090a18;
+      border:1px solid #40436a;
+      background:#070716;
       box-sizing:border-box;
     }
     input[type="range"]{
@@ -97,7 +97,7 @@
       font-weight:600;
       margin-top:6px;
       background:#4af2c5;
-      color:#061015;
+      color:#050f12;
       box-shadow:0 0 18px #4af2c57a;
     }
     button:hover{
@@ -113,13 +113,13 @@
     .preview-box{
       width:320px;
       height:320px;
-      background:#05060f;
+      background:#050616;
       border-radius:18px;
       display:flex;
       align-items:center;
       justify-content:center;
       position:relative;
-      overflow:visible;        /* <-- важно: ничего не режем */
+      overflow:hidden;
       box-shadow:0 0 24px #000000d9;
     }
 
@@ -133,11 +133,11 @@
       box-sizing:border-box;
       padding:10px;
       border-radius:10px;
-      border:1px solid #414369;
-      background:#05060f;
+      border:1px solid #40436a;
+      background:#050616;
       color:#f5f5ff;
       font-family:"JetBrains Mono","Fira Code",monospace;
-      font-size:0.82rem;
+      font-size:0.8rem;
       resize:vertical;
     }
     .hint{
@@ -146,86 +146,52 @@
       margin-top:4px;
     }
 
-    /* ===== СТИЛИ ПРЕВЬЮ ТАЙМЕРА ===== */
-    .timer-icy-container{
+    /* ===== ПРЕВЬЮ ТАЙМЕРА ===== */
+
+    .preview-timer-container{
       position:relative;
-      width:100%;              /* заполняем всю превьюшку */
-      height:100%;
+      width:92%;
+      height:92%;
       background-size:contain;
       background-position:center;
       background-repeat:no-repeat;
       pointer-events:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:visible;        /* и тут не режем */
     }
-    .timer-inner-wrapper{
-      position:relative;
-      width:50%;               /* размер круга внутри картинки */
-      aspect-ratio:1/1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:visible;
-    }
-    .timer-icy-inner{
+
+    #preview-sparkles{
       position:absolute;
       inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:visible;
+      width:100%;
+      height:100%;
       border-radius:50%;
-      background:transparent;
-    }
-    .timer-ring-svg{
-      position:absolute;
-      inset:0;
-      transform:rotate(-90deg);
-    }
-    .timer-ring-bg{
-      stroke:#1e2b3a;
-      stroke-width:6;
-      fill:none;
-      opacity:0.85;
-    }
-    .timer-ring-fg{
-      stroke:#8ad9ff;
-      stroke-width:6;
-      stroke-linecap:round;
-      fill:none;
-      stroke-dasharray:1 4;
-    }
-    .timer-sparkle{
-      stroke:#8ad9ff;
-      stroke-width:3;
-      fill:none;
-      stroke-dasharray:0.3 5;
-      opacity:0.9;
-      filter:drop-shadow(0 0 5px #8ad9ff) drop-shadow(0 0 10px #8ad9ff);
-      animation:sparkle-rot 6s linear infinite;
-    }
-    @keyframes sparkle-rot{
-      from{ stroke-dashoffset:0; }
-      to{ stroke-dashoffset:-200; }
-    }
-    .timer-time-display{
-      position:relative;
-      font-family:'Emilys Candy', cursive;
-      font-size:2.6em;
-      color:#e9f8ff;
-      user-select:none;
+      clip-path:circle(50% at 50% 50%);
+      pointer-events:none;
       z-index:2;
-      text-shadow:0 0 8px #8ad9ff,0 0 16px #8ad9ff;
+    }
+
+    .preview-time{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%, -50%);
+      font-family:'Emilys Candy',cursive;
+      font-size:2.6em;
+      color:#ffffff;
+      text-shadow:0 0 8px #7fd7ff,0 0 16px #7fd7ff;
+      user-select:none;
+      z-index:3;
+      white-space:nowrap;
     }
   </style>
-  <!-- линк для превью-шрифта -->
+
   <link id="preview-font-link" rel="stylesheet" />
 </head>
 <body>
-  <h1>Ice Timer Editor</h1>
-  <p class="hint">Слева настройки, по центру превью, справа готовый HTML для iframe / Genially.</p>
+  <h1>Ice Timer Sparkle Editor</h1>
+  <p class="hint">
+    Центр круга блёсток = центр цифр. В редакторе настраиваешь фон, шрифт, цвет, радиус круга, смещение по X/Y.
+    Справа получаешь готовый HTML для iframe / Genially.
+  </p>
 
   <div class="layout">
     <!-- ===== ПАНЕЛЬ УПРАВЛЕНИЯ ===== -->
@@ -233,7 +199,7 @@
       <h2>Настройки</h2>
 
       <div class="control-group">
-        <label for="bgUrl">Фоновая картинка (URL)</label>
+        <label for="bgUrl">Фоновая картинка таймера (URL)</label>
         <input type="url" id="bgUrl"
                value="https://i.postimg.cc/28yZbpGP/Chat-GPT-Image-19-noab-2025-g-21-37-10.png">
       </div>
@@ -244,8 +210,8 @@
           <input type="number" id="totalSeconds" min="1" value="30">
         </div>
         <div class="control-group">
-          <label for="scale">Размер таймера (% от iframe)</label>
-          <input type="range" id="scale" min="40" max="100" value="70">
+          <label for="sparkleRadius">Радиус круга блёсток (×размер цифр)</label>
+          <input type="range" id="sparkleRadius" min="1.0" max="3.0" step="0.1" value="1.8">
         </div>
       </div>
 
@@ -260,62 +226,36 @@
           <input type="number" id="fontSize" step="0.1" min="1" value="2.8">
         </div>
         <div class="control-group">
-          <label for="shape">Форма центра</label>
-          <select id="shape">
-            <option value="circle">Круг</option>
-            <option value="rounded">Скруглённый</option>
-            <option value="square">Квадрат</option>
-          </select>
+          <label for="sparkleCount">Плотность блёсток</label>
+          <input type="range" id="sparkleCount" min="40" max="260" step="10" value="160">
         </div>
       </div>
 
       <div class="control-inline">
         <div class="control-group">
-          <label for="offsetX">Смещение цифр по X (px)</label>
-          <input type="range" id="offsetX" min="-150" max="150" value="0">
+          <label for="offsetX">Смещение центра (X, px)</label>
+          <input type="range" id="offsetX" min="-100" max="100" value="0">
         </div>
         <div class="control-group">
-          <label for="offsetY">Смещение цифр по Y (px)</label>
-          <input type="range" id="offsetY" min="-150" max="150" value="0">
-        </div>
-      </div>
-
-      <div class="control-inline">
-        <div class="control-group">
-          <label for="mainColor">Цвет магической полоски</label>
-          <input type="color" id="mainColor" value="#8ad9ff">
-        </div>
-        <div class="control-group">
-          <label for="trackColor">Цвет фона полоски</label>
-          <input type="color" id="trackColor" value="#1e2b3a">
-        </div>
-      </div>
-
-      <div class="control-inline">
-        <div class="control-group">
-          <label for="centerColor">Цвет фона под цифрами</label>
-          <input type="color" id="centerColor" value="#001a33">
-        </div>
-        <div class="control-group">
-          <label for="centerOpacity">Прозрачность фона (0 = выкл.)</label>
-          <input type="number" id="centerOpacity" step="0.05" min="0" max="1" value="0.7">
+          <label for="offsetY">Смещение центра (Y, px)</label>
+          <input type="range" id="offsetY" min="-100" max="100" value="0">
         </div>
       </div>
 
       <div class="control-inline">
         <div class="control-group">
           <label for="textColor">Цвет цифр</label>
-          <input type="color" id="textColor" value="#e9f8ff">
+          <input type="color" id="textColor" value="#ffffff">
         </div>
         <div class="control-group">
-          <label for="glowColor">Цвет свечения</label>
-          <input type="color" id="glowColor" value="#8ad9ff">
+          <label for="sparkleColor">Цвет блёсток</label>
+          <input type="color" id="sparkleColor" value="#7fd7ff">
         </div>
       </div>
 
       <div class="control-group checkbox-row">
         <input type="checkbox" id="glowEnabled" checked>
-        <label for="glowEnabled">Включить свечение цифр и полоски</label>
+        <label for="glowEnabled">Свечение цифр и блёсток</label>
       </div>
 
       <button id="generateBtn">Сгенерировать HTML-код</button>
@@ -325,20 +265,14 @@
     <div class="preview-wrap">
       <h2>Preview</h2>
       <div class="panel preview-box">
-        <div id="preview-timer" class="timer-icy-container">
-          <div class="timer-inner-wrapper">
-            <div class="timer-icy-inner" id="preview-inner">
-              <svg class="timer-ring-svg" viewBox="0 0 100 100">
-                <circle class="timer-ring-bg" id="preview-bg-ring" cx="50" cy="50" r="42"></circle>
-                <circle class="timer-ring-fg" id="preview-ring" cx="50" cy="50" r="42"></circle>
-                <circle class="timer-sparkle" id="preview-sparkle" cx="50" cy="50" r="42"></circle>
-              </svg>
-              <div class="timer-time-display" id="preview-time">0:30</div>
-            </div>
-          </div>
+        <div id="preview-timer" class="preview-timer-container">
+          <canvas id="preview-sparkles"></canvas>
+          <div id="preview-time" class="preview-time">0:30</div>
         </div>
       </div>
-      <p class="hint">Opacity = 0 полностью убирает фон под цифрами. Размер, форма и шрифт видны сразу.</p>
+      <p class="hint">
+        Двигай X/Y — цифры и блёстки двигаются вместе. Радиус меняет размер кольца. Цвет блёсток и шрифт видны сразу.
+      </p>
     </div>
 
     <!-- ===== ВЫХОДНОЙ КОД ===== -->
@@ -346,362 +280,93 @@
       <h2>Готовый HTML</h2>
       <textarea id="output" spellcheck="false"></textarea>
       <p class="hint">
-        Скопируй код в iframe / расширение. Таймер будет центрироваться и масштабироваться вместе с размером iframe.
+        Скопируй содержимое в iframe / расширение Genially. Таймер центрируется в iframe, масштабируется вместе
+        с ним, прогресс показывает кольцо из блёсток вокруг цифр.
       </p>
     </div>
   </div>
 
   <script>
-    // --- элементы управления ---
     const bgUrlInput        = document.getElementById('bgUrl');
     const totalSecondsInput = document.getElementById('totalSeconds');
-    const scaleInput        = document.getElementById('scale');
+    const sparkleRadiusInput= document.getElementById('sparkleRadius');
     const fontNameInput     = document.getElementById('fontName');
     const fontSizeInput     = document.getElementById('fontSize');
-    const shapeInput        = document.getElementById('shape');
+    const sparkleCountInput = document.getElementById('sparkleCount');
     const offsetXInput      = document.getElementById('offsetX');
     const offsetYInput      = document.getElementById('offsetY');
-    const mainColorInput    = document.getElementById('mainColor');
-    const trackColorInput   = document.getElementById('trackColor');
-    const centerColorInput  = document.getElementById('centerColor');
-    const centerOpacityInput= document.getElementById('centerOpacity');
     const textColorInput    = document.getElementById('textColor');
-    const glowColorInput    = document.getElementById('glowColor');
+    const sparkleColorInput = document.getElementById('sparkleColor');
     const glowEnabledInput  = document.getElementById('glowEnabled');
 
     const previewTimer   = document.getElementById('preview-timer');
-    const previewInner   = document.getElementById('preview-inner');
-    const previewRing    = document.getElementById('preview-ring');
-    const previewBgRing  = document.getElementById('preview-bg-ring');
-    const previewSparkle = document.getElementById('preview-sparkle');
+    const previewCanvas  = document.getElementById('preview-sparkles');
+    const previewCtx     = previewCanvas.getContext('2d');
     const previewTimeEl  = document.getElementById('preview-time');
-
     const fontLink       = document.getElementById('preview-font-link');
     const outputTextarea = document.getElementById('output');
     const generateBtn    = document.getElementById('generateBtn');
 
-    function hexToRgb(hex){
-      hex = hex.replace('#','').trim();
-      if (hex.length === 3){
-        hex = hex.split('').map(ch => ch + ch).join('');
-      }
-      if (hex.length !== 6) return {r:0,g:0,b:0};
-      const num = parseInt(hex,16);
-      return {
-        r:(num >> 16) & 255,
-        g:(num >> 8) & 255,
-        b:num & 255
-      };
-    }
+    let previewTotalSeconds = 30;
+    let previewRemaining    = 30;
+    let previewTimerInterval= null;
+    let lastFrameTime       = 0;
 
     function updatePreviewFont(fontName){
       const fontParam = (fontName || 'Emilys Candy').trim().replace(/\s+/g,'+');
       fontLink.href = `https://fonts.googleapis.com/css2?family=${fontParam}&display=swap`;
     }
 
-    function shapeRadius(shape){
-      if (shape === 'square') return '0';
-      if (shape === 'rounded') return '24px';
-      return '50%';
+    function resizePreviewCanvas(){
+      const rect = previewCanvas.getBoundingClientRect();
+      const dpr  = window.devicePixelRatio || 1;
+      previewCanvas.width  = rect.width * dpr;
+      previewCanvas.height = rect.height * dpr;
+      previewCtx.setTransform(dpr,0,0,dpr,0,0);
     }
 
-    // ===== Превью =====
-    function updatePreview(){
+    function getPreviewCircleMetrics(){
+      const canvasRect = previewCanvas.getBoundingClientRect();
+      const textRect   = previewTimeEl.getBoundingClientRect();
+      const cx = (textRect.left + textRect.width/2) - canvasRect.left;
+      const cy = (textRect.top  + textRect.height/2) - canvasRect.top;
+      const base = Math.max(textRect.width, textRect.height);
+      const radiusMult = parseFloat(sparkleRadiusInput.value) || 1.8;
+      const r = base * radiusMult;
+      return {cx,cy,r};
+    }
+
+    function updatePreviewStyles(){
       const bgUrl        = bgUrlInput.value.trim();
-      const scale        = parseInt(scaleInput.value,10) || 70;
       const fontName     = fontNameInput.value.trim() || 'Emilys Candy';
       const fontSize     = parseFloat(fontSizeInput.value) || 2.8;
-      const shape        = shapeInput.value;
       const offsetX      = parseInt(offsetXInput.value,10) || 0;
       const offsetY      = parseInt(offsetYInput.value,10) || 0;
-      const mainColor    = mainColorInput.value || '#8ad9ff';
-      const trackColor   = trackColorInput.value || '#1e2b3a';
-      const centerColor  = centerColorInput.value || '#001a33';
-      const centerOpacity= Math.min(1, Math.max(0, parseFloat(centerOpacityInput.value)||0));
-      const textColor    = textColorInput.value || '#e9f8ff';
-      const glowColor    = glowColorInput.value || '#8ad9ff';
+      const textColor    = textColorInput.value || '#ffffff';
+      const sparkleColor = sparkleColorInput.value || '#7fd7ff';
       const glowEnabled  = glowEnabledInput.checked;
 
-      const rgb = hexToRgb(centerColor);
-      const centerBG = centerOpacity <= 0
-        ? 'transparent'
-        : `radial-gradient(
-            circle,
-            rgba(${rgb.r},${rgb.g},${rgb.b},${centerOpacity}) 0%,
-            rgba(${rgb.r},${rgb.g},${rgb.b},${centerOpacity * 0.4}) 55%,
-            rgba(${rgb.r},${rgb.g},${rgb.b},0) 100%
-          )`;
-
       previewTimer.style.backgroundImage = bgUrl ? `url("${bgUrl}")` : 'none';
-      previewTimer.style.width  = scale + '%';
-      previewTimer.style.height = scale + '%';
-
-      previewInner.style.borderRadius = shapeRadius(shape);
-      previewInner.style.background = centerBG;
-      previewInner.style.transform =
-        `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
-      previewInner.style.top = '50%';
-      previewInner.style.left = '50%';
-
-      previewRing.style.stroke   = mainColor;
-      previewBgRing.style.stroke = trackColor;
-      previewSparkle.style.stroke= mainColor;
 
       previewTimeEl.style.fontFamily = `'${fontName}', cursive`;
-      previewTimeEl.style.fontSize   = fontSize + 'em';
+      previewTimeEl.style.fontSize   = fontSize+'em';
       previewTimeEl.style.color      = textColor;
+      previewTimeEl.style.left = '50%';
+      previewTimeEl.style.top  = '50%';
+      previewTimeEl.style.transform =
+        `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
 
       if (glowEnabled){
         previewTimeEl.style.textShadow =
-          `0 0 8px ${glowColor},0 0 15px ${glowColor}`;
-        previewRing.style.filter =
-          `drop-shadow(0 0 6px ${glowColor}) drop-shadow(0 0 12px ${glowColor})`;
-        previewSparkle.style.filter =
-          `drop-shadow(0 0 5px ${glowColor}) drop-shadow(0 0 10px ${glowColor})`;
+          `0 0 8px ${sparkleColor},0 0 18px ${sparkleColor}`;
       } else {
         previewTimeEl.style.textShadow = 'none';
-        previewRing.style.filter = 'none';
-        previewSparkle.style.filter = 'none';
       }
-
       updatePreviewFont(fontName);
+      resizePreviewCanvas();
     }
-
-    // ===== Генерация итогового HTML =====
-    function generateCode(){
-      const bgUrl        = bgUrlInput.value.trim();
-      const totalSeconds = parseInt(totalSecondsInput.value,10) || 30;
-      const scale        = parseInt(scaleInput.value,10) || 70;
-      const fontName     = fontNameInput.value.trim() || 'Emilys Candy';
-      const fontParam    = fontName.replace(/\s+/g,'+');
-      const fontSize     = parseFloat(fontSizeInput.value) || 2.8;
-      const shape        = shapeInput.value;
-      const offsetX      = parseInt(offsetXInput.value,10) || 0;
-      const offsetY      = parseInt(offsetYInput.value,10) || 0;
-      const mainColor    = mainColorInput.value || '#8ad9ff';
-      const trackColor   = trackColorInput.value || '#1e2b3a';
-      const centerColor  = centerColorInput.value || '#001a33';
-      const centerOpacity= Math.min(1, Math.max(0, parseFloat(centerOpacityInput.value)||0));
-      const textColor    = textColorInput.value || '#e9f8ff';
-      const glowColor    = glowColorInput.value || '#8ad9ff';
-      const glowEnabled  = glowEnabledInput.checked;
-
-      const rgb = hexToRgb(centerColor);
-      const centerBG = centerOpacity <= 0
-        ? 'transparent'
-        : `radial-gradient(
-            circle,
-            rgba(${rgb.r},${rgb.g},${rgb.b},${centerOpacity}) 0%,
-            rgba(${rgb.r},${rgb.g},${rgb.b},${centerOpacity * 0.4}) 55%,
-            rgba(${rgb.r},${rgb.g},${rgb.b},0) 100%
-          )`;
-
-      const glowTextShadow = glowEnabled
-        ? `text-shadow:0 0 8px ${glowColor},0 0 16px ${glowColor};`
-        : `text-shadow:none;`;
-
-      const glowFilter = glowEnabled
-        ? `filter:drop-shadow(0 0 6px ${glowColor}) drop-shadow(0 0 12px ${glowColor});`
-        : `filter:none;`;
-
-      const sparkleFilter = glowEnabled
-        ? `filter:drop-shadow(0 0 5px ${glowColor}) drop-shadow(0 0 10px ${glowColor});`
-        : `filter:none;`;
-
-      const shapeR = shapeRadius(shape);
-
-      const bgImageCss = bgUrl
-        ? `background-image:url("${bgUrl}");`
-        : `background-image:none;`;
-
-      const code = `
-<div class="card-iframe">
-  <!-- Ice Timer -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=${fontParam}&display=swap" rel="stylesheet">
-
-  <style>
-    html,body{
-      margin:0;
-      padding:0;
-      width:100%;
-      height:100%;
-      background:transparent;
-      overflow:hidden;
-    }
-    .timer-root{
-      width:100%;
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .timer-icy-container{
-      position:relative;
-      width:${scale}vmin;
-      max-width:520px;
-      aspect-ratio:1/1;
-      ${bgImageCss}
-      background-size:contain;
-      background-position:center;
-      background-repeat:no-repeat;
-      pointer-events:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:visible;
-    }
-    .timer-inner-wrapper{
-      position:relative;
-      width:50%;
-      aspect-ratio:1/1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:visible;
-    }
-    .timer-icy-inner{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:visible;
-      border-radius:${shapeR};
-      background:${centerBG};
-      transform:translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px));
-      top:50%;
-      left:50%;
-    }
-    .timer-ring-svg{
-      position:absolute;
-      inset:0;
-      transform:rotate(-90deg);
-    }
-    .timer-ring-bg{
-      stroke:${trackColor};
-      stroke-width:6;
-      fill:none;
-      opacity:0.85;
-    }
-    .timer-ring-fg{
-      stroke:${mainColor};
-      stroke-width:6;
-      stroke-linecap:round;
-      fill:none;
-      stroke-dasharray:1 4;
-      ${glowFilter}
-    }
-    .timer-sparkle{
-      stroke:${mainColor};
-      stroke-width:3;
-      fill:none;
-      stroke-dasharray:0.3 5;
-      opacity:0.9;
-      ${sparkleFilter}
-      animation:sparkle-rot 6s linear infinite;
-    }
-    @keyframes sparkle-rot{
-      from{ stroke-dashoffset:0; }
-      to{ stroke-dashoffset:-200; }
-    }
-    .timer-time-display{
-      position:relative;
-      font-family:'${fontName}', cursive;
-      font-size:${fontSize}em;
-      color:${textColor};
-      user-select:none;
-      z-index:2;
-      ${glowTextShadow}
-    }
-  </style>
-
-  <div class="timer-root">
-    <div class="timer-icy-container">
-      <div class="timer-inner-wrapper">
-        <div class="timer-icy-inner">
-          <svg class="timer-ring-svg" viewBox="0 0 100 100">
-            <circle class="timer-ring-bg" cx="50" cy="50" r="42"></circle>
-            <circle class="timer-ring-fg" id="timer-ring" cx="50" cy="50" r="42"></circle>
-            <circle class="timer-sparkle" cx="50" cy="50" r="42"></circle>
-          </svg>
-          <div class="timer-time-display" id="time-display">0:00</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const initialTotalSeconds = ${totalSeconds};
-
-    let totalSeconds = initialTotalSeconds;
-    let remainingSeconds = totalSeconds;
-    let timerInterval = null;
-
-    const timeDisplay = document.getElementById('time-display');
-    const ring = document.getElementById('timer-ring');
-
-    const radius = 42;
-    const circumference = 2 * Math.PI * radius;
-    ring.style.strokeDasharray = circumference;
-    ring.style.strokeDashoffset = circumference;
 
     function formatTime(sec){
       const m = Math.floor(sec/60);
-      const s = sec % 60;
-      return \`\${m}:\${s<10?'0':''}\${s}\`;
-    }
-    function setProgress(pct){
-      const offset = circumference * (1 - pct);
-      ring.style.strokeDashoffset = offset;
-    }
-    function updateDisplay(){
-      timeDisplay.textContent = formatTime(remainingSeconds);
-      const pct = remainingSeconds / totalSeconds;
-      setProgress(pct);
-    }
-    function startCountdown(){
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        if (remainingSeconds <= 0){
-          clearInterval(timerInterval);
-          timerInterval = null;
-          remainingSeconds = 0;
-          updateDisplay();
-          return;
-        }
-        remainingSeconds--;
-        updateDisplay();
-      }, 1000);
-    }
-
-    updateDisplay();
-    startCountdown();
-  <\/script>
-</div>
-`.trim();
-
-      outputTextarea.value = code;
-    }
-
-    // Лайв-превью
-    [
-      bgUrlInput,totalSecondsInput,scaleInput,fontNameInput,fontSizeInput,shapeInput,
-      offsetXInput,offsetYInput,mainColorInput,trackColorInput,
-      centerColorInput,centerOpacityInput,textColorInput,
-      glowColorInput,glowEnabledInput
-    ].forEach(el => {
-      el.addEventListener('input', () => {
-        updatePreview();
-      });
-    });
-
-    generateBtn.addEventListener('click', generateCode);
-
-    // стартовое состояние
-    updatePreview();
-    generateCode();
-  </script>
-</body>
-</html>
+      const s = sec%60;
+      return `${m}:${s<10?'0
