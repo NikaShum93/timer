@@ -1,287 +1,664 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Редактор таймера</title>
+  <meta charset="UTF-8" />
+  <title>Ice Timer Editor</title>
   <style>
+    :root{
+      color-scheme: dark;
+    }
     body{
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:#151524;
-      color:#f5f5f5;
       margin:0;
       padding:20px;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#0a0b16;
+      color:#f5f5ff;
     }
     h1{
-      margin-top:0;
-      margin-bottom:10px;
+      margin:0 0 10px 0;
+      font-size:1.4rem;
     }
-    .panel{
+    .layout{
       display:flex;
       gap:24px;
       align-items:flex-start;
       flex-wrap:wrap;
     }
+    .panel{
+      background:#141527;
+      border-radius:14px;
+      padding:14px 16px;
+      box-shadow:0 0 24px #0000009c;
+    }
     .controls{
-      max-width:380px;
-      padding:16px 18px;
-      border-radius:12px;
-      background:#22213a;
-      box-shadow:0 0 20px #00000066;
+      width:360px;
+      max-width:100%;
+    }
+    .controls h2,
+    .preview-wrap h2,
+    .output-wrap h2{
+      font-size:1rem;
+      margin:0 0 8px 0;
+      color:#c7c7ff;
     }
     .control-group{
       margin-bottom:10px;
     }
     .control-group label{
       display:block;
-      font-size:0.9rem;
+      font-size:0.82rem;
       margin-bottom:4px;
     }
-    .control-group input[type="number"],
-    .control-group input[type="text"],
-    .control-group select{
-      width:100%;
-      padding:6px 8px;
-      border-radius:6px;
-      border:1px solid #555;
-      background:#19182a;
-      color:#f5f5f5;
-      box-sizing:border-box;
-    }
-    .colors-row{
+    .control-inline{
       display:flex;
       gap:8px;
-      flex-wrap:wrap;
     }
-    .colors-row .control-group{
-      flex:1 1 110px;
+    .control-inline .control-group{
+      flex:1;
+      margin-bottom:0;
+    }
+    input[type="number"],
+    input[type="text"],
+    input[type="url"],
+    select{
+      width:100%;
+      box-sizing:border-box;
+      padding:6px 8px;
+      border-radius:6px;
+      border:1px solid #414369;
+      background:#090a18;
+      color:#f5f5ff;
+      font-size:0.85rem;
     }
     input[type="color"]{
       width:100%;
       height:32px;
       padding:0;
       border-radius:6px;
-      border:1px solid #555;
-      background:#19182a;
+      border:1px solid #414369;
+      background:#090a18;
+      box-sizing:border-box;
+    }
+    input[type="range"]{
+      width:100%;
+    }
+    .checkbox-row{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:0.85rem;
     }
     button{
-      margin-top:8px;
       width:100%;
       padding:8px 10px;
       border-radius:8px;
       border:none;
       cursor:pointer;
       font-weight:600;
-      background:#ff9900;
-      color:#2b2440;
-      box-shadow:0 0 15px #ff990088;
+      margin-top:6px;
+      background:#4af2c5;
+      color:#061015;
+      box-shadow:0 0 18px #4af2c57a;
     }
     button:hover{
       filter:brightness(1.05);
     }
-    .output{
-      flex:1 1 360px;
+
+    .preview-wrap{
+      flex:0 0 320px;
       display:flex;
       flex-direction:column;
-      gap:8px;
+      gap:6px;
     }
-    .output textarea{
+    .preview-box{
+      width:320px;
+      height:320px;
+      background:#05060f;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 0 24px #000000d9;
+    }
+
+    .output-wrap{
+      flex:1 1 360px;
+      min-width:280px;
+    }
+    textarea{
       width:100%;
-      min-height:360px;
+      min-height:380px;
+      box-sizing:border-box;
       padding:10px;
       border-radius:10px;
-      border:1px solid #555;
-      background:#050513;
-      color:#f5f5f5;
-      font-family: "JetBrains Mono","Fira Code",monospace;
-      font-size:0.85rem;
-      box-sizing:border-box;
+      border:1px solid #414369;
+      background:#05060f;
+      color:#f5f5ff;
+      font-family:"JetBrains Mono","Fira Code",monospace;
+      font-size:0.82rem;
       resize:vertical;
     }
     .hint{
-      font-size:0.85rem;
-      color:#bbbbff;
+      font-size:0.8rem;
+      color:#a4a4ff;
+      margin-top:4px;
+    }
+
+    /* ===== СТИЛИ ПРЕВЬЮ ТАЙМЕРА ===== */
+    .timer-icy-container{
+      position:relative;
+      width:70%;
+      height:70%;
+      background-size:contain;
+      background-position:center;
+      background-repeat:no-repeat;
+      pointer-events:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+   .timer-inner-wrapper{
+  position:relative;
+  width:50%;          /* было 58% */
+  aspect-ratio:1/1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+    .timer-icy-inner{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:visible;
+      border-radius:50%;
+      background:transparent;
+    }
+    .timer-ring-svg{
+      position:absolute;
+      inset:0;
+      transform:rotate(-90deg);
+    }
+    .timer-ring-bg{
+      stroke:#1e2b3a;
+      stroke-width:6;
+      fill:none;
+      opacity:0.85;
+    }
+    .timer-ring-fg{
+      stroke:#8ad9ff;
+      stroke-width:6;
+      stroke-linecap:round;
+      fill:none;
+      stroke-dasharray:1 4;
+    }
+    .timer-sparkle{
+      stroke:#8ad9ff;
+      stroke-width:3;
+      fill:none;
+      stroke-dasharray:0.3 5;
+      opacity:0.9;
+      filter:drop-shadow(0 0 5px #8ad9ff) drop-shadow(0 0 10px #8ad9ff);
+      animation:sparkle-rot 6s linear infinite;
+    }
+    @keyframes sparkle-rot{
+      from{ stroke-dashoffset:0; }
+      to{ stroke-dashoffset:-200; }
+    }
+    .timer-time-display{
+      position:relative;
+      font-family:'Emilys Candy', cursive;
+      font-size:2.6em;
+      color:#e9f8ff;
+      user-select:none;
+      z-index:2;
+      text-shadow:0 0 8px #8ad9ff,0 0 16px #8ad9ff;
     }
   </style>
+  <!-- линк для превью-шрифта -->
+  <link id="preview-font-link" rel="stylesheet" />
 </head>
 <body>
-  <h1>Редактор таймера (круг/квадрат)</h1>
-  <p class="hint">1) Настрой параметры. 2) Нажми «Сгенерировать код». 3) Скопируй результат в Genially / iframe.</p>
+  <h1>Ice Timer Editor</h1>
+  <p class="hint">Слева настройки, по центру превью, справа готовый HTML для iframe / Genially.</p>
 
-  <div class="panel">
-    <div class="controls">
+  <div class="layout">
+    <!-- ===== ПАНЕЛЬ УПРАВЛЕНИЯ ===== -->
+    <div class="panel controls">
+      <h2>Настройки</h2>
+
       <div class="control-group">
-        <label for="totalSeconds">Начальное время (секунды)</label>
-        <input type="number" id="totalSeconds" value="30" min="1">
+        <label for="bgUrl">Фоновая картинка (URL)</label>
+        <input type="url" id="bgUrl"
+               value="https://i.postimg.cc/28yZbpGP/Chat-GPT-Image-19-noab-2025-g-21-37-10.png">
+      </div>
+
+      <div class="control-inline">
+        <div class="control-group">
+          <label for="totalSeconds">Время (сек.)</label>
+          <input type="number" id="totalSeconds" min="1" value="30">
+        </div>
+        <div class="control-group">
+          <label for="scale">Размер таймера (% от iframe)</label>
+          <input type="range" id="scale" min="40" max="100" value="70">
+        </div>
       </div>
 
       <div class="control-group">
-        <label for="size">Размер виджета (px, ширина=высота)</label>
-        <input type="number" id="size" value="180" min="60">
-      </div>
-
-      <div class="control-group">
-        <label for="shape">Форма</label>
-        <select id="shape">
-          <option value="circle">Круг</option>
-          <option value="square">Квадрат</option>
-          <option value="rounded">Скруглённый квадрат</option>
-        </select>
-      </div>
-
-      <div class="control-group" id="radiusGroup" style="display:none;">
-        <label for="radius">Радиус скругления (px для скруглённого квадрата)</label>
-        <input type="number" id="radius" value="24" min="0">
-      </div>
-
-      <div class="control-group">
-        <label for="fontName">Шрифт Google Fonts (пример: Emilys Candy)</label>
+        <label for="fontName">Шрифт Google Fonts (название)</label>
         <input type="text" id="fontName" value="Emilys Candy">
       </div>
 
-      <div class="colors-row">
+      <div class="control-inline">
         <div class="control-group">
-          <label for="mainColor">Основной цвет прогресса</label>
-          <input type="color" id="mainColor" value="#ff9900">
+          <label for="fontSize">Размер цифр (em)</label>
+          <input type="number" id="fontSize" step="0.1" min="1" value="2.8">
         </div>
         <div class="control-group">
-          <label for="trackColor">Цвет «пустой» части</label>
-          <input type="color" id="trackColor" value="#333333">
+          <label for="shape">Форма центра</label>
+          <select id="shape">
+            <option value="circle">Круг</option>
+            <option value="rounded">Скруглённый</option>
+            <option value="square">Квадрат</option>
+          </select>
         </div>
       </div>
 
-      <div class="colors-row">
+      <div class="control-inline">
         <div class="control-group">
-          <label for="centerBg">Фон центра</label>
-          <input type="color" id="centerBg" value="#2c2a4f">
+          <label for="offsetX">Смещение цифр по X (px)</label>
+          <input type="range" id="offsetX" min="-60" max="60" value="0">
         </div>
+        <div class="control-group">
+          <label for="offsetY">Смещение цифр по Y (px)</label>
+          <input type="range" id="offsetY" min="-60" max="60" value="0">
+        </div>
+      </div>
+
+      <div class="control-inline">
+        <div class="control-group">
+          <label for="mainColor">Цвет магической полоски</label>
+          <input type="color" id="mainColor" value="#8ad9ff">
+        </div>
+        <div class="control-group">
+          <label for="trackColor">Цвет фона полоски</label>
+          <input type="color" id="trackColor" value="#1e2b3a">
+        </div>
+      </div>
+
+      <div class="control-inline">
+        <div class="control-group">
+          <label for="centerColor">Цвет фона под цифрами</label>
+          <input type="color" id="centerColor" value="#001a33">
+        </div>
+        <div class="control-group">
+          <label for="centerOpacity">Прозрачность фона (0 = выкл.)</label>
+          <input type="number" id="centerOpacity" step="0.05" min="0" max="1" value="0.7">
+        </div>
+      </div>
+
+      <div class="control-inline">
         <div class="control-group">
           <label for="textColor">Цвет цифр</label>
-          <input type="color" id="textColor" value="#ffcc00">
+          <input type="color" id="textColor" value="#e9f8ff">
+        </div>
+        <div class="control-group">
+          <label for="glowColor">Цвет свечения</label>
+          <input type="color" id="glowColor" value="#8ad9ff">
         </div>
       </div>
 
-      <div class="control-group">
-        <label for="glowColor">Цвет свечения</label>
-        <input type="color" id="glowColor" value="#ff9900">
+      <div class="control-group checkbox-row">
+        <input type="checkbox" id="glowEnabled" checked>
+        <label for="glowEnabled">Включить свечение цифр и полоски</label>
       </div>
 
-      <button id="generate">Сгенерировать код</button>
+      <button id="generateBtn">Сгенерировать HTML-код</button>
     </div>
 
-    <div class="output">
-      <label for="output">Готовый HTML-код таймера:</label>
+    <!-- ===== ПРЕВЬЮ ===== -->
+    <div class="preview-wrap">
+      <h2>Preview</h2>
+      <div class="panel preview-box">
+        <div id="preview-timer" class="timer-icy-container">
+          <div class="timer-inner-wrapper">
+            <div class="timer-icy-inner" id="preview-inner">
+              <svg class="timer-ring-svg" viewBox="0 0 100 100">
+                <circle class="timer-ring-bg" id="preview-bg-ring" cx="50" cy="50" r="42"></circle>
+                <circle class="timer-ring-fg" id="preview-ring" cx="50" cy="50" r="42"></circle>
+                <circle class="timer-sparkle" id="preview-sparkle" cx="50" cy="50" r="42"></circle>
+              </svg>
+              <div class="timer-time-display" id="preview-time">0:30</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="hint">Opacity = 0 полностью убирает фон под цифрами. Размер, форма и шрифт видны сразу.</p>
+    </div>
+
+    <!-- ===== ВЫХОДНОЙ КОД ===== -->
+    <div class="panel output-wrap">
+      <h2>Готовый HTML</h2>
       <textarea id="output" spellcheck="false"></textarea>
       <p class="hint">
-        Вставь этот код в iframe / HTML-блок. При загрузке он сам запускает обратный отсчёт.<br>
-        При желании можно отредактировать top/left и z-index у <code>.timer-widget-container</code>.
+        Скопируй код в iframe / расширение. Таймер будет центрироваться и масштабироваться вместе с размером iframe.
       </p>
     </div>
   </div>
 
   <script>
-    const shapeSelect = document.getElementById('shape');
-    const radiusGroup = document.getElementById('radiusGroup');
+    // --- элементы управления ---
+    const bgUrlInput        = document.getElementById('bgUrl');
+    const totalSecondsInput = document.getElementById('totalSeconds');
+    const scaleInput        = document.getElementById('scale');
+    const fontNameInput     = document.getElementById('fontName');
+    const fontSizeInput     = document.getElementById('fontSize');
+    const shapeInput        = document.getElementById('shape');
+    const offsetXInput      = document.getElementById('offsetX');
+    const offsetYInput      = document.getElementById('offsetY');
+    const mainColorInput    = document.getElementById('mainColor');
+    const trackColorInput   = document.getElementById('trackColor');
+    const centerColorInput  = document.getElementById('centerColor');
+    const centerOpacityInput= document.getElementById('centerOpacity');
+    const textColorInput    = document.getElementById('textColor');
+    const glowColorInput    = document.getElementById('glowColor');
+    const glowEnabledInput  = document.getElementById('glowEnabled');
 
-    shapeSelect.addEventListener('change', () => {
-      radiusGroup.style.display = shapeSelect.value === 'rounded' ? 'block' : 'none';
-    });
+    const previewTimer   = document.getElementById('preview-timer');
+    const previewInner   = document.getElementById('preview-inner');
+    const previewRing    = document.getElementById('preview-ring');
+    const previewBgRing  = document.getElementById('preview-bg-ring');
+    const previewSparkle = document.getElementById('preview-sparkle');
+    const previewTimeEl  = document.getElementById('preview-time');
 
-    function generateCode(){
-      const totalSeconds = parseInt(document.getElementById('totalSeconds').value, 10) || 30;
-      const size = parseInt(document.getElementById('size').value, 10) || 180;
-      const shape = document.getElementById('shape').value;
-      const radius = parseInt(document.getElementById('radius').value, 10) || 24;
+    const fontLink       = document.getElementById('preview-font-link');
+    const outputTextarea = document.getElementById('output');
+    const generateBtn    = document.getElementById('generateBtn');
 
-      const fontName = (document.getElementById('fontName').value || 'Emilys Candy').trim();
-      const fontParam = fontName.replace(/\s+/g, '+');
-
-      const mainColor = document.getElementById('mainColor').value || '#ff9900';
-      const trackColor = document.getElementById('trackColor').value || '#333333';
-      const centerBg = document.getElementById('centerBg').value || '#2c2a4f';
-      const textColor = document.getElementById('textColor').value || '#ffcc00';
-      const glowColor = document.getElementById('glowColor').value || '#ff9900';
-
-      let borderRadiusCSS = '50%';
-      if (shape === 'square') {
-        borderRadiusCSS = '0';
-      } else if (shape === 'rounded') {
-        borderRadiusCSS = radius + 'px';
+    function hexToRgb(hex){
+      hex = hex.replace('#','').trim();
+      if (hex.length === 3){
+        hex = hex.split('').map(ch => ch + ch).join('');
       }
+      if (hex.length !== 6) return {r:0,g:0,b:0};
+      const num = parseInt(hex,16);
+      return {
+        r:(num >> 16) & 255,
+        g:(num >> 8) & 255,
+        b:num & 255
+      };
+    }
+
+    function updatePreviewFont(fontName){
+      const fontParam = (fontName || 'Emilys Candy').trim().replace(/\s+/g,'+');
+      fontLink.href = `https://fonts.googleapis.com/css2?family=${fontParam}&display=swap`;
+    }
+
+    function shapeRadius(shape){
+      if (shape === 'square') return '0';
+      if (shape === 'rounded') return '24px';
+      return '50%';
+    }
+
+    // ===== Превью =====
+    function updatePreview(){
+      const bgUrl        = bgUrlInput.value.trim();
+      const scale        = parseInt(scaleInput.value,10) || 70;
+      const fontName     = fontNameInput.value.trim() || 'Emilys Candy';
+      const fontSize     = parseFloat(fontSizeInput.value) || 2.8;
+      const shape        = shapeInput.value;
+      const offsetX      = parseInt(offsetXInput.value,10) || 0;
+      const offsetY      = parseInt(offsetYInput.value,10) || 0;
+      const mainColor    = mainColorInput.value || '#8ad9ff';
+      const trackColor   = trackColorInput.value || '#1e2b3a';
+      const centerColor  = centerColorInput.value || '#001a33';
+      const centerOpacity= Math.min(1, Math.max(0, parseFloat(centerOpacityInput.value)||0));
+      const textColor    = textColorInput.value || '#e9f8ff';
+      const glowColor    = glowColorInput.value || '#8ad9ff';
+      const glowEnabled  = glowEnabledInput.checked;
+
+      const rgb = hexToRgb(centerColor);
+     const centerBG = centerOpacity <= 0
+  ? 'transparent'
+  : `radial-gradient(
+      circle,
+      rgba(${rgb.r},${rgb.g},${rgb.b},${centerOpacity}) 0%,
+      rgba(${rgb.r},${rgb.g},${rgb.b},${centerOpacity * 0.4}) 55%,
+      rgba(${rgb.r},${rgb.g},${rgb.b},0) 100%
+    )`;
+
+
+      previewTimer.style.backgroundImage = bgUrl ? `url("${bgUrl}")` : 'none';
+
+      previewTimer.style.width  = scale + '%';
+      previewTimer.style.height = scale + '%';
+
+      previewInner.style.borderRadius = shapeRadius(shape);
+      previewInner.style.background = centerBG;
+      previewInner.style.transform =
+        `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+
+      previewRing.style.stroke   = mainColor;
+      previewBgRing.style.stroke = trackColor;
+      previewSparkle.style.stroke= mainColor;
+
+      previewTimeEl.style.fontFamily = `'${fontName}', cursive`;
+      previewTimeEl.style.fontSize   = fontSize + 'em';
+      previewTimeEl.style.color      = textColor;
+
+      if (glowEnabled){
+        previewTimeEl.style.textShadow =
+          `0 0 8px ${glowColor},0 0 15px ${glowColor}`;
+        previewRing.style.filter =
+          `drop-shadow(0 0 6px ${glowColor}) drop-shadow(0 0 12px ${glowColor})`;
+        previewSparkle.style.filter =
+          `drop-shadow(0 0 5px ${glowColor}) drop-shadow(0 0 10px ${glowColor})`;
+      } else {
+        previewTimeEl.style.textShadow = 'none';
+        previewRing.style.filter = 'none';
+        previewSparkle.style.filter = 'none';
+      }
+
+      updatePreviewFont(fontName);
+    }
+
+    // ===== Генерация итогового HTML =====
+    function generateCode(){
+      const bgUrl        = bgUrlInput.value.trim();
+      const totalSeconds = parseInt(totalSecondsInput.value,10) || 30;
+      const scale        = parseInt(scaleInput.value,10) || 70;
+      const fontName     = fontNameInput.value.trim() || 'Emilys Candy';
+      const fontParam    = fontName.replace(/\s+/g,'+');
+      const fontSize     = parseFloat(fontSizeInput.value) || 2.8;
+      const shape        = shapeInput.value;
+      const offsetX      = parseInt(offsetXInput.value,10) || 0;
+      const offsetY      = parseInt(offsetYInput.value,10) || 0;
+      const mainColor    = mainColorInput.value || '#8ad9ff';
+      const trackColor   = trackColorInput.value || '#1e2b3a';
+      const centerColor  = centerColorInput.value || '#001a33';
+      const centerOpacity= Math.min(1, Math.max(0, parseFloat(centerOpacityInput.value)||0));
+      const textColor    = textColorInput.value || '#e9f8ff';
+      const glowColor    = glowColorInput.value || '#8ad9ff';
+      const glowEnabled  = glowEnabledInput.checked;
+
+      const rgb = hexToRgb(centerColor);
+      const centerBG = centerOpacity <= 0
+        ? 'transparent'
+        : `radial-gradient(circle, rgba(${rgb.r},${rgb.g},${rgb.b},${centerOpacity}) 0%, rgba(${rgb.r},${rgb.g},${rgb.b},${centerOpacity}) 75%)`;
+
+      const glowTextShadow = glowEnabled
+        ? `text-shadow:0 0 8px ${glowColor},0 0 16px ${glowColor};`
+        : `text-shadow:none;`;
+
+      const glowFilter = glowEnabled
+        ? `filter:drop-shadow(0 0 6px ${glowColor}) drop-shadow(0 0 12px ${glowColor});`
+        : `filter:none;`;
+
+      const sparkleFilter = glowEnabled
+        ? `filter:drop-shadow(0 0 5px ${glowColor}) drop-shadow(0 0 10px ${glowColor});`
+        : `filter:none;`;
+
+      const shapeR = shapeRadius(shape);
+
+      const bgImageCss = bgUrl
+        ? `background-image:url("${bgUrl}");`
+        : `background-image:none;`;
 
       const code = `
 <div class="card-iframe">
+  <!-- Ice Timer -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=${fontParam}&display=swap" rel="stylesheet">
 
   <style>
-    .timer-widget-container{
-      width:${size}px; height:${size}px;
-      position:fixed; top:30px; left:30px; z-index:1000;
-      border-radius:${borderRadiusCSS};
-      box-shadow:0 0 25px 12px ${glowColor}aa;
+    html,body{
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
+      background:transparent;
+      overflow:hidden;
+    }
+    .timer-root{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .timer-icy-container{
+      position:relative;
+      width:${scale}vmin;
+      max-width:520px;
+      aspect-ratio:1/1;
+      ${bgImageCss}
+      background-size:contain;
+      background-position:center;
+      background-repeat:no-repeat;
+      pointer-events:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .timer-inner-wrapper{
+      position:relative;
+      width:50%;
+      aspect-ratio:1/1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .timer-icy-inner{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       overflow:visible;
+      border-radius:${shapeR};
+      background:${centerBG};
+      transform:translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px));
+      top:50%;
+      left:50%;
     }
-    .timer-progress{
-      width:100%; height:100%; border-radius:${borderRadiusCSS};
-      background-image: conic-gradient(${mainColor} 100%, ${trackColor} 0);
-      display:flex; align-items:center; justify-content:center;
-      transition: background-image 1s linear;
+    .timer-ring-svg{
+      position:absolute;
+      inset:0;
+      transform:rotate(-90deg);
     }
-    .timer-center-hole{
-      width:85%; height:85%; border-radius:${borderRadiusCSS};
-      background:${centerBg};
-      box-shadow: inset 0 0 12px #00000099;
-      display:flex; align-items:center; justify-content:center;
+    .timer-ring-bg{
+      stroke:${trackColor};
+      stroke-width:6;
+      fill:none;
+      opacity:0.85;
+    }
+    .timer-ring-fg{
+      stroke:${mainColor};
+      stroke-width:6;
+      stroke-linecap:round;
+      fill:none;
+      stroke-dasharray:1 4;
+      ${glowFilter}
+    }
+    .timer-sparkle{
+      stroke:${mainColor};
+      stroke-width:3;
+      fill:none;
+      stroke-dasharray:0.3 5;
+      opacity:0.9;
+      ${sparkleFilter}
+      animation:sparkle-rot 6s linear infinite;
+    }
+    @keyframes sparkle-rot{
+      from{ stroke-dashoffset:0; }
+      to{ stroke-dashoffset:-200; }
     }
     .timer-time-display{
+      position:relative;
       font-family:'${fontName}', cursive;
-      font-size:3.5em; color:${textColor};
-      text-shadow:0 0 6px ${glowColor};
+      font-size:${fontSize}em;
+      color:${textColor};
       user-select:none;
+      z-index:2;
+      ${glowTextShadow}
     }
   </style>
 
-  <div class="timer-widget-container">
-    <div class="timer-progress" id="timer-progress-bar">
-      <div class="timer-center-hole">
-        <div class="timer-time-display" id="time-display">0:00</div>
+  <div class="timer-root">
+    <div class="timer-icy-container">
+      <div class="timer-inner-wrapper">
+        <div class="timer-icy-inner">
+          <svg class="timer-ring-svg" viewBox="0 0 100 100">
+            <circle class="timer-ring-bg" cx="50" cy="50" r="42"></circle>
+            <circle class="timer-ring-fg" id="timer-ring" cx="50" cy="50" r="42"></circle>
+            <circle class="timer-sparkle" cx="50" cy="50" r="42"></circle>
+          </svg>
+          <div class="timer-time-display" id="time-display">0:00</div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    // === Настройки ===
-    const initialTotalSeconds = ${totalSeconds}; // стартовое время (сек)
+    const initialTotalSeconds = ${totalSeconds};
 
-    // === Переменные ===
     let totalSeconds = initialTotalSeconds;
     let remainingSeconds = totalSeconds;
     let timerInterval = null;
 
-    const progressDiv = document.getElementById('timer-progress-bar');
     const timeDisplay = document.getElementById('time-display');
+    const ring = document.getElementById('timer-ring');
+
+    const radius = 42;
+    const circumference = 2 * Math.PI * radius;
+    ring.style.strokeDasharray = circumference;
+    ring.style.strokeDashoffset = circumference;
 
     function formatTime(sec){
       const m = Math.floor(sec/60);
-      const s = sec%60;
+      const s = sec % 60;
       return \`\${m}:\${s<10?'0':''}\${s}\`;
     }
-
+    function setProgress(pct){
+      const offset = circumference * (1 - pct);
+      ring.style.strokeDashoffset = offset;
+    }
     function updateDisplay(){
       timeDisplay.textContent = formatTime(remainingSeconds);
-      const pct = (remainingSeconds/totalSeconds)*100;
-      progressDiv.style.backgroundImage =
-        \`conic-gradient(${mainColor} \${pct}%, ${trackColor} \${pct}%)\`;
+      const pct = remainingSeconds / totalSeconds;
+      setProgress(pct);
     }
-
     function startCountdown(){
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
-        if (remainingSeconds<=0){
+        if (remainingSeconds <= 0){
           clearInterval(timerInterval);
-          timerInterval=null;
-          remainingSeconds=0;
+          timerInterval = null;
+          remainingSeconds = 0;
           updateDisplay();
           return;
         }
@@ -290,19 +667,31 @@
       }, 1000);
     }
 
-    // Автозапуск при загрузке
     updateDisplay();
     startCountdown();
   <\/script>
 </div>
 `.trim();
 
-      document.getElementById('output').value = code;
+      outputTextarea.value = code;
     }
 
-    document.getElementById('generate').addEventListener('click', generateCode);
+    // Лайв-превью
+    [
+      bgUrlInput,totalSecondsInput,scaleInput,fontNameInput,fontSizeInput,shapeInput,
+      offsetXInput,offsetYInput,mainColorInput,trackColorInput,
+      centerColorInput,centerOpacityInput,textColorInput,
+      glowColorInput,glowEnabledInput
+    ].forEach(el => {
+      el.addEventListener('input', () => {
+        updatePreview();
+      });
+    });
 
-    // сразу что-то сгенерируем по умолчанию
+    generateBtn.addEventListener('click', generateCode);
+
+    // стартовое состояние
+    updatePreview();
     generateCode();
   </script>
 </body>
