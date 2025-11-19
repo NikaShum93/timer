@@ -1,508 +1,8 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <title>Ice Timer Sparkle Editor</title>
-  <style>
-    :root{
-      color-scheme: dark;
-    }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      padding:20px;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:#050712;
-      color:#f5f5ff;
-    }
-    h1{
-      margin:0 0 4px 0;
-      font-size:1.4rem;
-    }
-    .subtitle{
-      font-size:0.82rem;
-      color:#a9a9ff;
-      margin-bottom:16px;
-    }
-    .layout{
-      display:flex;
-      gap:20px;
-      align-items:flex-start;
-      flex-wrap:wrap;
-    }
-    .panel{
-      background:#0c0f20;
-      border-radius:14px;
-      padding:14px 16px;
-      box-shadow:0 0 24px rgba(0,0,0,0.6);
-    }
-    .controls{
-      width:340px;
-      max-width:100%;
-    }
-    .controls h2,
-    .preview-wrap h2,
-    .output-wrap h2{
-      font-size:1rem;
-      margin:0 0 8px 0;
-      color:#d0d0ff;
-    }
-    .control-group{
-      margin-bottom:10px;
-    }
-    .control-group label{
-      display:block;
-      font-size:0.82rem;
-      margin-bottom:4px;
-    }
-    .control-inline{
-      display:flex;
-      gap:8px;
-    }
-    .control-inline .control-group{
-      flex:1;
-      margin-bottom:0;
-    }
-    input[type="number"],
-    input[type="text"],
-    input[type="url"],
-    select{
-      width:100%;
-      padding:6px 8px;
-      border-radius:6px;
-      border:1px solid #353863;
-      background:#050712;
-      color:#f5f5ff;
-      font-size:0.85rem;
-    }
-    input[type="color"]{
-      width:100%;
-      height:32px;
-      padding:0;
-      border-radius:6px;
-      border:1px solid #353863;
-      background:#050712;
-    }
-    input[type="range"]{
-      width:100%;
-    }
-    .checkbox-row{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      font-size:0.85rem;
-      margin-top:4px;
-    }
-    button{
-      width:100%;
-      padding:8px 10px;
-      border-radius:8px;
-      border:none;
-      cursor:pointer;
-      font-weight:600;
-      margin-top:8px;
-      background:#4af2c5;
-      color:#050712;
-      box-shadow:0 0 18px rgba(74,242,197,0.45);
-    }
-    button:hover{ filter:brightness(1.05); }
-
-    .preview-wrap{
-      flex:0 0 320px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    .preview-box{
-      width:320px;
-      height:320px;
-      background:#050712;
-      border-radius:18px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-      overflow:hidden;
-      box-shadow:0 0 24px rgba(0,0,0,0.85);
-    }
-
-    .output-wrap{
-      flex:1 1 380px;
-      min-width:280px;
-    }
-    textarea{
-      width:100%;
-      min-height:380px;
-      padding:10px;
-      border-radius:10px;
-      border:1px solid #353863;
-      background:#050712;
-      color:#f5f5ff;
-      font-family:"JetBrains Mono","Fira Code",monospace;
-      font-size:0.8rem;
-      resize:vertical;
-    }
-    .hint{
-      font-size:0.8rem;
-      color:#a4a4ff;
-      margin-top:4px;
-    }
-
-    /* ===== ПРЕВЬЮ ТАЙМЕРА ===== */
-    .timer-preview-root{
-      width:100%;
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .timer-preview-outer{
-      position:relative;
-      width:90%;
-      height:90%;
-      background-size:contain;
-      background-repeat:no-repeat;
-      background-position:center;
-    }
-    .timer-preview-inner{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    #preview-canvas{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-    }
-    .timer-preview-time{
-      position:absolute;
-      transform:translate(-50%,-50%);
-      font-family:'Emilys Candy',cursive;
-      font-size:2.8em;
-      color:#e9f8ff;
-      text-shadow:0 0 8px #7fd7ff,0 0 16px #7fd7ff;
-      user-select:none;
-      z-index:2;
-      left:50%;
-      top:50%;
-    }
-  </style>
-  <link id="preview-font-link" rel="stylesheet" />
-</head>
-<body>
-  <h1>Ice Timer Sparkle Editor</h1>
-  <p class="subtitle">
-    Центр круга блёсток = центр цифр. В редакторе настраиваешь фон, шрифт, цвет, радиус круга, смещение по X/Y.
-    Справа получаешь готовый HTML для iframe / Genially.
-  </p>
-
-  <div class="layout">
-    <!-- ========= НАСТРОЙКИ ========= -->
-    <div class="panel controls">
-      <h2>Настройки</h2>
-
-      <div class="control-group">
-        <label for="bgUrl">Фоновая картинка таймера (URL)</label>
-        <input type="url" id="bgUrl"
-               value="https://i.postimg.cc/28yZbpGP/Chat-GPT-Image-19-noab-2025-g-21-37-10.png">
-      </div>
-
-      <div class="control-inline">
-        <div class="control-group">
-          <label for="totalSeconds">Время (сек.)</label>
-          <input type="number" id="totalSeconds" min="1" value="30">
-        </div>
-        <div class="control-group">
-          <label for="fontSize">Размер цифр (em)</label>
-          <input type="number" id="fontSize" step="0.1" min="1" value="2.8">
-        </div>
-      </div>
-
-      <div class="control-group">
-        <label for="fontName">Шрифт Google Fonts (название)</label>
-        <input type="text" id="fontName" value="Emilys Candy">
-      </div>
-
-      <div class="control-group">
-        <label for="radiusScale">Радиус круга блёсток (× размер цифр)</label>
-        <input type="range" id="radiusScale" min="1.0" max="4.0" step="0.1" value="2.2">
-      </div>
-
-      <div class="control-inline">
-        <div class="control-group">
-          <label for="offsetX">Смещение центра (X, px)</label>
-          <input type="range" id="offsetX" min="-120" max="120" value="0">
-        </div>
-        <div class="control-group">
-          <label for="offsetY">Смещение центра (Y, px)</label>
-          <input type="range" id="offsetY" min="-120" max="120" value="0">
-        </div>
-      </div>
-
-      <div class="control-inline">
-        <div class="control-group">
-          <label for="density">Плотность блёсток</label>
-          <input type="range" id="density" min="0.3" max="2.0" step="0.1" value="1.0">
-        </div>
-        <div class="control-group">
-          <label for="glowColor">Цвет свечения / блёсток</label>
-          <input type="color" id="glowColor" value="#7fd7ff">
-        </div>
-      </div>
-
-      <div class="control-inline">
-        <div class="control-group">
-          <label for="digitColor">Цвет цифр</label>
-          <input type="color" id="digitColor" value="#e9f8ff">
-        </div>
-        <div class="control-group">
-          <label for="bgColor">Цвет под цифрами (опц.)</label>
-          <input type="color" id="bgColor" value="#00000000">
-        </div>
-      </div>
-
-      <div class="control-group checkbox-row">
-        <input type="checkbox" id="glowEnabled" checked>
-        <label for="glowEnabled">Свечение цифр и блёсток</label>
-      </div>
-
-      <button id="generateBtn">Сгенерировать HTML-код</button>
-    </div>
-
-    <!-- ========= ПРЕВЬЮ ========= -->
-    <div class="preview-wrap">
-      <h2>Preview</h2>
-      <div class="panel preview-box">
-        <div class="timer-preview-root">
-          <div class="timer-preview-outer" id="preview-outer">
-            <div class="timer-preview-inner">
-              <canvas id="preview-canvas"></canvas>
-              <div class="timer-preview-time" id="preview-time">0:30</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p class="hint">
-        Радиус круга зависит от размера цифр × множитель. Смещение X/Y двигает и круг, и время вместе.
-      </p>
-    </div>
-
-    <!-- ========= ВЫХОДНОЙ КОД ========= -->
-    <div class="panel output-wrap">
-      <h2>Готовый HTML</h2>
-      <textarea id="output" spellcheck="false"></textarea>
-      <p class="hint">
-        Скопируй код в iframe / расширение Genially. Таймер центрируется и масштабируется вместе с iframe;
-        прогресс показывается кольцом из блёсток вокруг центра цифр.
-      </p>
-    </div>
-  </div>
-
-  <script>
-    // ===== ЭЛЕМЕНТЫ =====
-    const bgUrlInput        = document.getElementById('bgUrl');
-    const totalSecondsInput = document.getElementById('totalSeconds');
-    const fontNameInput     = document.getElementById('fontName');
-    const fontSizeInput     = document.getElementById('fontSize');
-    const radiusScaleInput  = document.getElementById('radiusScale');
-    const offsetXInput      = document.getElementById('offsetX');
-    const offsetYInput      = document.getElementById('offsetY');
-    const densityInput      = document.getElementById('density');
-    const digitColorInput   = document.getElementById('digitColor');
-    const glowColorInput    = document.getElementById('glowColor');
-    const bgColorInput      = document.getElementById('bgColor');
-    const glowEnabledInput  = document.getElementById('glowEnabled');
-    const generateBtn       = document.getElementById('generateBtn');
-
-    const previewOuter   = document.getElementById('preview-outer');
-    const previewCanvas  = document.getElementById('preview-canvas');
-    const previewTimeEl  = document.getElementById('preview-time');
-    const fontLink       = document.getElementById('preview-font-link');
-    const outputTextarea = document.getElementById('output');
-
-    // ===== КОНФИГ ПРЕВЬЮ =====
-    const previewConfig = {
-      totalSeconds: 30,
-      fontName: 'Emilys Candy',
-      fontSizeEm: 2.8,
-      radiusScale: 2.2,
-      offsetX: 0,
-      offsetY: 0,
-      density: 1.0,
-      digitColor: '#e9f8ff',
-      glowColor: '#7fd7ff',
-      bgUrl: '',
-      bgColor: '#00000000',
-      glowEnabled: true
-    };
-
-    // ===== ВСПОМОГАТЕЛЬНОЕ =====
-    function formatTime(sec){
-      const m = Math.floor(sec/60);
-      const s = sec%60;
-      return `${m}:${s<10?'0':''}${s}`;
-    }
-
-    function updateFontLink(fontName){
-      const f = (fontName || 'Emilys Candy').trim().replace(/\s+/g,'+');
-      fontLink.href = `https://fonts.googleapis.com/css2?family=${f}&display=swap`;
-    }
-
-    // ===== ПРЕВЬЮ: ОБНОВЛЕНИЕ СТИЛЕЙ =====
-    function applyPreviewStyles(){
-      const bgUrl = bgUrlInput.value.trim();
-      previewConfig.bgUrl = bgUrl;
-      previewOuter.style.backgroundImage = bgUrl ? `url("${bgUrl}")` : 'none';
-
-      previewConfig.totalSeconds = parseInt(totalSecondsInput.value,10) || 30;
-      previewConfig.fontName     = fontNameInput.value.trim() || 'Emilys Candy';
-      previewConfig.fontSizeEm   = parseFloat(fontSizeInput.value) || 2.8;
-      previewConfig.radiusScale  = parseFloat(radiusScaleInput.value) || 2.2;
-      previewConfig.offsetX      = parseInt(offsetXInput.value,10) || 0;
-      previewConfig.offsetY      = parseInt(offsetYInput.value,10) || 0;
-      previewConfig.density      = parseFloat(densityInput.value) || 1.0;
-      previewConfig.digitColor   = digitColorInput.value || '#e9f8ff';
-      previewConfig.glowColor    = glowColorInput.value || '#7fd7ff';
-      previewConfig.bgColor      = bgColorInput.value || '#00000000';
-      previewConfig.glowEnabled  = glowEnabledInput.checked;
-
-      previewTimeEl.style.fontFamily = `'${previewConfig.fontName}', cursive`;
-      previewTimeEl.style.fontSize   = previewConfig.fontSizeEm+'em';
-      previewTimeEl.style.color      = previewConfig.digitColor;
-
-      const glow = previewConfig.glowEnabled ? previewConfig.glowColor : 'transparent';
-      previewTimeEl.style.textShadow = previewConfig.glowEnabled
-        ? `0 0 8px ${glow},0 0 16px ${glow}`
-        : 'none';
-
-      // смещение центра цифр
-      previewTimeEl.style.left = `calc(50% + ${previewConfig.offsetX}px)`;
-      previewTimeEl.style.top  = `calc(50% + ${previewConfig.offsetY}px)`;
-
-      updateFontLink(previewConfig.fontName);
-    }
-
-    // ===== ПРЕВЬЮ: РАЗМЕР CANVAS =====
-    function resizePreviewCanvas(){
-      const rect = previewCanvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      previewCanvas.width  = rect.width * dpr;
-      previewCanvas.height = rect.height * dpr;
-      previewCtx.setTransform(dpr,0,0,dpr,0,0);
-    }
-
-    const previewCtx = previewCanvas.getContext('2d');
-
-    // Центр и радиус круга по центру цифр
-    function getPreviewCircleMetrics(){
-      const canvasRect = previewCanvas.getBoundingClientRect();
-      const textRect   = previewTimeEl.getBoundingClientRect();
-
-      const cx = (textRect.left + textRect.width/2) - canvasRect.left;
-      const cy = (textRect.top  + textRect.height/2) - canvasRect.top;
-
-      const base = Math.max(textRect.width, textRect.height);
-      const r = base * previewConfig.radiusScale;
-
-      return { cx, cy, r };
-    }
-
-    function pseudoRand01(i, seed){
-      const x = Math.sin(i*12.9898 + seed*78.233)*43758.5453;
-      return x - Math.floor(x);
-    }
-
-    let previewRemaining = previewConfig.totalSeconds;
-
-    function updatePreviewTime(){
-      previewTimeEl.textContent = formatTime(previewRemaining);
-    }
-
-    function previewTick(){
-      previewRemaining--;
-      if (previewRemaining < 0){
-        previewRemaining = previewConfig.totalSeconds;
-      }
-      updatePreviewTime();
-    }
-
-    function drawPreviewSparkles(timeMs){
-      const ctx = previewCtx;
-      ctx.clearRect(0,0,previewCanvas.width,previewCanvas.height);
-
-      const prog = previewRemaining / previewConfig.totalSeconds;
-      if (prog <= 0) return;
-
-      const {cx,cy,r} = getPreviewCircleMetrics();
-      const DOT_COUNT = Math.round(140 * previewConfig.density);
-      const fullCircle = 2*Math.PI;
-      const arcAngle   = fullCircle * prog;
-      const startAngle = -Math.PI/2;
-      const baseAlpha  = 0.7 * (0.4 + 0.6*prog);
-
-      for(let i=0;i<DOT_COUNT;i++){
-        const p = DOT_COUNT===1 ? 0 : i/(DOT_COUNT-1);
-        const angle = startAngle + p*arcAngle;
-        const jitter = (pseudoRand01(i,1)-0.5)*r*0.04;
-        const rr = r + jitter;
-
-        const x = cx + Math.cos(angle)*rr;
-        const y = cy + Math.sin(angle)*rr;
-
-        const radius = 0.7 + pseudoRand01(i,2)*0.9;
-        const alpha  = baseAlpha*(0.6 + 0.4*pseudoRand01(i,3));
-
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(x,y,radius,0,Math.PI*2);
-        ctx.fillStyle = previewConfig.glowColor;
-        if (previewConfig.glowEnabled){
-          ctx.shadowColor = previewConfig.glowColor;
-          ctx.shadowBlur  = 6;
-        } else {
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur  = 0;
-        }
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    }
-
-    function previewLoop(ts){
-      drawPreviewSparkles(ts||0);
-      requestAnimationFrame(previewLoop);
-    }
-
-    // ===== ГЕНЕРАЦИЯ ГОТОВОГО КОДА =====
-    function generateCode(){
-      const bgUrl        = bgUrlInput.value.trim();
-      const totalSeconds = parseInt(totalSecondsInput.value,10) || 30;
-      const fontName     = fontNameInput.value.trim() || 'Emilys Candy';
-      const fontParam    = fontName.replace(/\s+/g,'+');
-      const fontSizeEm   = parseFloat(fontSizeInput.value) || 2.8;
-      const radiusScale  = parseFloat(radiusScaleInput.value) || 2.2;
-      const offsetX      = parseInt(offsetXInput.value,10) || 0;
-      const offsetY      = parseInt(offsetYInput.value,10) || 0;
-      const density      = parseFloat(densityInput.value) || 1.0;
-      const digitColor   = digitColorInput.value || '#e9f8ff';
-      const glowColor    = glowColorInput.value || '#7fd7ff';
-      const bgColor      = bgColorInput.value || '#00000000';
-      const glowEnabled  = glowEnabledInput.checked;
-
-      const DOT_BASE = Math.round(140 * density);
-
-      const glowTextShadow = glowEnabled
-        ? `text-shadow:0 0 8px ${glowColor},0 0 16px ${glowColor};`
-        : `text-shadow:none;`;
-
-      const code = `
 <div class="card-iframe">
-  <!-- Ice Timer Sparkle -->
+  <!-- Ice Timer with real sparkles -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=${fontParam}&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Emilys+Candy&display=swap" rel="stylesheet">
 
   <style>
     html,body{
@@ -524,14 +24,12 @@
       position:relative;
       width:100%;
       height:100%;
-      max-width:100%;
-      max-height:100%;
-      ${bgUrl ? `background-image:url("${bgUrl}");` : ''}
+      background-image:url("https://i.postimg.cc/28yZbpGP/Chat-GPT-Image-19-noab-2025-g-21-37-10.png");
       background-size:contain;
-      background-position:center;
       background-repeat:no-repeat;
+      background-position:center;
       pointer-events:none;
-      overflow:visible;
+      overflow:hidden;
     }
     .timer-inner{
       position:absolute;
@@ -544,16 +42,17 @@
       position:absolute;
       inset:0;
       pointer-events:none;
+      /* на всякий случай обрезаем всё внутри круга */
     }
     #time-display{
       position:absolute;
-      left:calc(50% + ${offsetX}px);
-      top:calc(50% + ${offsetY}px);
+      left:50%;
+      top:50%;
       transform:translate(-50%,-50%);
-      font-family:'${fontName}',cursive;
-      font-size:${fontSizeEm}em;
-      color:${digitColor};
-      ${glowTextShadow}
+      font-family:'Emilys Candy',cursive;
+      font-size:2.8em;
+      color:#ffffff;
+      text-shadow:0 0 8px #7fd7ff,0 0 16px #7fd7ff;
       user-select:none;
       z-index:2;
     }
@@ -569,11 +68,12 @@
   </div>
 
   <script>
-    const INITIAL_TOTAL_SECONDS = ${totalSeconds};
-    const DOT_COUNT = ${DOT_BASE};
-    const GLOW_COLOR = "${glowColor}";
-    const GLOW_ENABLED = ${glowEnabled ? 'true':'false'};
-    const RADIUS_SCALE = ${radiusScale};
+    /* НАСТРОЙКИ */
+    const INITIAL_TOTAL_SECONDS = 30;          // время таймера
+    const GLOW_COLOR = "#7fd7ff";              // цвет блёсток
+    const DOT_COUNT  = 160;                    // максимум точек по кругу
+    const MIN_DOTS   = 24;                     // минимум, чтобы магия не исчезала резко
+    const RADIUS_SCALE = 1.4;                  // радиус = ширина цифр * этот множитель
 
     let totalSeconds = INITIAL_TOTAL_SECONDS;
     let remainingSeconds = totalSeconds;
@@ -586,7 +86,7 @@
     function formatTime(sec){
       const m = Math.floor(sec/60);
       const s = sec%60;
-      return \`\${m}:\${s<10?'0':''}\${s}\`;
+      return `${m}:${s<10?'0':''}${s}`;
     }
     function updateDisplay(){
       timeDisplay.textContent = formatTime(remainingSeconds);
@@ -605,6 +105,7 @@
       ctx.setTransform(dpr,0,0,dpr,0,0);
     }
 
+    // центр и радиус круга вокруг ЦИФР
     function getCircleMetrics(){
       const canvasRect = canvas.getBoundingClientRect();
       const textRect   = timeDisplay.getBoundingClientRect();
@@ -620,41 +121,50 @@
 
     function drawSparkles(){
       ctx.clearRect(0,0,canvas.width,canvas.height);
+
       const progress = remainingSeconds / totalSeconds;
       if (progress <= 0) return;
 
       const {cx,cy,r} = getCircleMetrics();
-      const fullCircle = 2*Math.PI;
-      const arcAngle   = fullCircle * progress;
-      const startAngle = -Math.PI/2;
-      const baseAlpha  = 0.7*(0.4 + 0.6*progress);
 
-      for(let i=0;i<DOT_COUNT;i++){
-        const p = DOT_COUNT===1 ? 0 : i/(DOT_COUNT-1);
-        const angle = startAngle + p*arcAngle;
-        const jitter = (pseudoRand01(i,1)-0.5)*r*0.04;
+      // Клип по кругу, чтобы НИЧЕГО не выходило за пределы дырки
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, r*1.1, 0, Math.PI*2);
+      ctx.clip();
+
+      const fullCircle = 2*Math.PI;
+      const arcAngle   = fullCircle * progress;   // сколько круга осталось
+      const startAngle = -Math.PI/2;              // сверху
+
+      const dots = Math.max(MIN_DOTS, Math.round(DOT_COUNT * progress));
+      const baseAlpha = 0.6 + 0.3*progress;       // чуть тусклее к концу
+
+      for(let i=0;i<dots;i++){
+        const t = dots===1 ? 0 : i/(dots-1);      // равномерно по дуге 0..1
+        const angle = startAngle + t*arcAngle;
+
+        // совсем небольшой статичный шум по радиусу
+        const jitter = (pseudoRand01(i,1)-0.5)*r*0.03;
         const rr = r + jitter;
 
         const x = cx + Math.cos(angle)*rr;
         const y = cy + Math.sin(angle)*rr;
 
-        const radius = 0.7 + pseudoRand01(i,2)*0.9;
-        const alpha  = baseAlpha*(0.6 + 0.4*pseudoRand01(i,3));
+        const radius = 0.7 + pseudoRand01(i,2)*0.5;  // МЕЛКИЕ точки
+        const alpha  = baseAlpha*(0.7 + 0.3*pseudoRand01(i,3));
 
         ctx.globalAlpha = alpha;
         ctx.beginPath();
         ctx.arc(x,y,radius,0,Math.PI*2);
-        ctx.fillStyle = GLOW_COLOR;
-        if (GLOW_ENABLED){
-          ctx.shadowColor = GLOW_COLOR;
-          ctx.shadowBlur = 6;
-        }else{
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
-        }
+        ctx.fillStyle = "#e6f7ff";
+        ctx.shadowColor = GLOW_COLOR;
+        ctx.shadowBlur  = 4;   // маленький блур — чтобы не превращалось в полосу
         ctx.fill();
       }
+
       ctx.globalAlpha = 1;
+      ctx.restore();
     }
 
     function loop(){
@@ -665,9 +175,9 @@
     function startTimer(){
       clearInterval(timerInterval);
       timerInterval = setInterval(()=>{
-        if(remainingSeconds<=0){
+        if (remainingSeconds <= 0){
           clearInterval(timerInterval);
-          remainingSeconds=0;
+          remainingSeconds = 0;
           updateDisplay();
           return;
         }
@@ -682,50 +192,8 @@
       startTimer();
       loop();
     }
+
     init();
-    window.addEventListener('resize',resizeCanvas);
-  <\/script>
-</div>
-`.trim();
-
-      outputTextarea.value = code;
-    }
-
-    // ===== СЛУШАТЕЛИ =====
-    const inputs = [
-      bgUrlInput,totalSecondsInput,fontNameInput,fontSizeInput,
-      radiusScaleInput,offsetXInput,offsetYInput,
-      densityInput,digitColorInput,glowColorInput,bgColorInput,glowEnabledInput
-    ];
-    inputs.forEach(el => {
-      el.addEventListener('input', () => {
-        applyPreviewStyles();
-        generateCode();
-      });
-    });
-    generateBtn.addEventListener('click', generateCode);
-
-    // ==== ИНИЦИАЛИЗАЦИЯ ПРЕВЬЮ ====
-    let previewTimerId = null;
-    function startPreviewCountdown(){
-      if(previewTimerId) clearInterval(previewTimerId);
-      previewRemaining = previewConfig.totalSeconds;
-      updatePreviewTime();
-      previewTimerId = setInterval(()=>{
-        previewTick();
-      },1000);
-    }
-
-    window.addEventListener('resize', () => {
-      resizePreviewCanvas();
-    });
-
-    // старт
-    applyPreviewStyles();
-    resizePreviewCanvas();
-    startPreviewCountdown();
-    requestAnimationFrame(previewLoop);
-    generateCode();
+    window.addEventListener('resize', resizeCanvas);
   </script>
-</body>
-</html>
+</div>
