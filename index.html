@@ -223,7 +223,7 @@
       background-size:contain;
       background-repeat:no-repeat;
       background-position:center;
-      overflow:visible; /* не режем свечение */
+      overflow:visible;
     }
     .timer-preview-core{
       position:absolute;
@@ -237,9 +237,17 @@
       justify-content:center;
       overflow:visible;
     }
-    .timer-preview-core svg{
+    .timer-preview-ring-wrap{
       position:absolute;
       inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:visible;
+    }
+    .timer-preview-ring-wrap svg{
+      width:100%;
+      height:100%;
       overflow:visible;
     }
     .timer-ring-bg{
@@ -280,8 +288,8 @@
 <body>
   <h1>Таймер КГБ</h1>
   <p class="subtitle">
-    Неоновый таймер для Genially: слева настраиваешь фон, шрифт, размер и положение,
-    радиус и толщину полоски. Справа — готовый HTML для iframe. То, что в Preview, будет в игре.
+    Неоновый таймер для Genially: слева настраиваешь фон, шрифт, смещение,
+    радиус и толщину полоски (или вовсе её отключаешь). Справа — готовый HTML для iframe.
   </p>
 
   <div class="layout">
@@ -324,9 +332,20 @@
         </div>
       </div>
 
-      <div class="control-group">
-        <label for="coreScale">Размер кольца (% от картинки)</label>
-        <input type="range" id="coreScale" min="30" max="100" step="1" value="65">
+      <div class="control-inline">
+        <div class="control-group">
+          <label for="ringOffsetX">Смещение полоски (X, px)</label>
+          <input type="range" id="ringOffsetX" min="-60" max="60" value="0">
+        </div>
+        <div class="control-group">
+          <label for="ringOffsetY">Смещение полоски (Y, px)</label>
+          <input type="range" id="ringOffsetY" min="-60" max="60" value="0">
+        </div>
+      </div>
+
+      <div class="control-group checkbox-row">
+        <input type="checkbox" id="ringEnabled" checked>
+        <label for="ringEnabled">Показывать полоску прогресса</label>
       </div>
 
       <hr class="hr-soft">
@@ -372,18 +391,20 @@
         <div class="timer-preview-root">
           <div class="timer-preview-outer" id="preview-outer">
             <div class="timer-preview-core" id="preview-core">
-              <svg viewBox="0 0 100 100">
-                <circle id="preview-ring-bg" class="timer-ring-bg" cx="50" cy="50" r="38"></circle>
-                <circle id="preview-ring-fg" class="timer-ring-fg" cx="50" cy="50" r="38"></circle>
-              </svg>
+              <div class="timer-preview-ring-wrap" id="preview-ring-wrap">
+                <svg viewBox="0 0 100 100">
+                  <circle id="preview-ring-bg" class="timer-ring-bg" cx="50" cy="50" r="38"></circle>
+                  <circle id="preview-ring-fg" class="timer-ring-fg" cx="50" cy="50" r="38"></circle>
+                </svg>
+              </div>
               <div class="timer-preview-time" id="preview-time">0:30</div>
             </div>
           </div>
         </div>
       </div>
       <p class="hint">
-        Сдвиг таймера двигает и цифры, и полоску вместе. «Размер кольца» масштабирует
-        кольцо целиком. Радиус/толщина позволяют подогнать по ободу часов.
+        Смещение таймера двигает всё целиком. Смещение полоски — только кольцо, цифры остаются по центру.
+        Чекбокс позволяет полностью скрыть полоску прогресса.
       </p>
     </div>
 
@@ -393,7 +414,7 @@
       <textarea id="output" spellcheck="false"></textarea>
       <p class="hint">
         Скопируй код целиком в iframe / расширение Genially. Таймер центрируется в iframe,
-        масштабируется вместе с ним, а неоновая полоска показывает прогресс по кругу.
+        масштабируется вместе с ним, а полоска при необходимости можно выключить.
       </p>
     </div>
   </div>
@@ -411,7 +432,9 @@
 
     const offsetXInput      = document.getElementById('offsetX');
     const offsetYInput      = document.getElementById('offsetY');
-    const coreScaleInput    = document.getElementById('coreScale');
+    const ringOffsetXInput  = document.getElementById('ringOffsetX');
+    const ringOffsetYInput  = document.getElementById('ringOffsetY');
+    const ringEnabledInput  = document.getElementById('ringEnabled');
 
     const ringRadiusInput   = document.getElementById('ringRadius');
     const ringWidthInput    = document.getElementById('ringWidth');
@@ -423,6 +446,7 @@
 
     const previewOuter   = document.getElementById('preview-outer');
     const previewCore    = document.getElementById('preview-core');
+    const previewRingWrap= document.getElementById('preview-ring-wrap');
     const previewRingBg  = document.getElementById('preview-ring-bg');
     const previewRingFg  = document.getElementById('preview-ring-fg');
     const previewTimeEl  = document.getElementById('preview-time');
@@ -453,7 +477,9 @@
       const fontSize    = parseFloat(fontSizeInput.value) || 2.8;
       const offsetX     = parseInt(offsetXInput.value,10) || 0;
       const offsetY     = parseInt(offsetYInput.value,10) || 0;
-      const coreScale   = parseInt(coreScaleInput.value,10) || 65;
+      const ringOffsetX = parseInt(ringOffsetXInput.value,10) || 0;
+      const ringOffsetY = parseInt(ringOffsetYInput.value,10) || 0;
+      const ringEnabled = ringEnabledInput.checked;
       const ringRadius  = parseFloat(ringRadiusInput.value) || 38;
       const ringWidth   = parseFloat(ringWidthInput.value) || 6;
       const mainColor   = mainColorInput.value || '#7fd7ff';
@@ -464,12 +490,14 @@
       previewTotalSeconds = totalSec;
       previewOuter.style.backgroundImage = bgUrl ? `url("${bgUrl}")` : 'none';
 
-      // размер кольца (процент от картинки)
-      previewCore.style.width = coreScale + '%';
-
       // центр таймера
       previewCore.style.left = `calc(50% + ${offsetX}px)`;
       previewCore.style.top  = `calc(50% + ${offsetY}px)`;
+      previewCore.style.width = '65%';
+
+      // смещение кольца
+      previewRingWrap.style.transform = `translate(${ringOffsetX}px, ${ringOffsetY}px)`;
+      previewRingWrap.style.display   = ringEnabled ? 'flex' : 'none';
 
       // шрифт
       previewTimeEl.style.fontFamily = `'${fontName}', cursive`;
@@ -537,7 +565,9 @@
       const fontSize    = parseFloat(fontSizeInput.value) || 2.8;
       const offsetX     = parseInt(offsetXInput.value,10) || 0;
       const offsetY     = parseInt(offsetYInput.value,10) || 0;
-      const coreScale   = parseInt(coreScaleInput.value,10) || 65;
+      const ringOffsetX = parseInt(ringOffsetXInput.value,10) || 0;
+      const ringOffsetY = parseInt(ringOffsetYInput.value,10) || 0;
+      const ringEnabled = ringEnabledInput.checked;
       const ringRadius  = parseFloat(ringRadiusInput.value) || 38;
       const ringWidth   = parseFloat(ringWidthInput.value) || 6;
       const mainColor   = mainColorInput.value || '#7fd7ff';
@@ -551,6 +581,8 @@
       const glowFilter = glowEnabled
         ? `filter:drop-shadow(0 0 8px ${mainColor}) drop-shadow(0 0 18px ${mainColor});`
         : `filter:none;`;
+
+      const ringVisibilityCss = ringEnabled ? '' : '.timer-ring-wrap{display:none;}';
 
       const code = `
 <div class="card-iframe">
@@ -584,14 +616,14 @@
       background-position:center;
       background-repeat:no-repeat;
       pointer-events:none;
-      overflow:visible; /* не режем свечение */
+      overflow:visible;
     }
     .timer-core{
       position:absolute;
       left:calc(50% + ${offsetX}px);
       top:calc(50% + ${offsetY}px);
       transform:translate(-50%,-50%);
-      width:${coreScale}%;
+      width:65%;
       max-width:100%;
       aspect-ratio:1/1;
       display:flex;
@@ -599,9 +631,18 @@
       justify-content:center;
       overflow:visible;
     }
-    .timer-core svg{
+    .timer-ring-wrap{
       position:absolute;
       inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:visible;
+      transform:translate(${ringOffsetX}px, ${ringOffsetY}px);
+    }
+    .timer-ring-wrap svg{
+      width:100%;
+      height:100%;
       overflow:visible;
     }
     .timer-ring-bg{
@@ -628,15 +669,18 @@
       user-select:none;
       z-index:2;
     }
+    ${ringVisibilityCss}
   </style>
 
   <div class="timer-root">
     <div class="timer-outer">
       <div class="timer-core">
-        <svg viewBox="0 0 100 100">
-          <circle class="timer-ring-bg" cx="50" cy="50" r="${ringRadius}"></circle>
-          <circle class="timer-ring-fg" id="timer-ring" cx="50" cy="50" r="${ringRadius}"></circle>
-        </svg>
+        <div class="timer-ring-wrap">
+          <svg viewBox="0 0 100 100">
+            <circle class="timer-ring-bg" cx="50" cy="50" r="${ringRadius}"></circle>
+            <circle class="timer-ring-fg" id="timer-ring" cx="50" cy="50" r="${ringRadius}"></circle>
+          </svg>
+        </div>
         <div id="time-display">0:00</div>
       </div>
     </div>
@@ -653,8 +697,10 @@
 
     const RADIUS = ${ringRadius};
     const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-    ring.style.strokeDasharray = CIRCUMFERENCE;
-    ring.style.strokeDashoffset = CIRCUMFERENCE;
+    if (ring){
+      ring.style.strokeDasharray = CIRCUMFERENCE;
+      ring.style.strokeDashoffset = CIRCUMFERENCE;
+    }
 
     function formatTime(sec){
       const m = Math.floor(sec/60);
@@ -663,6 +709,7 @@
     }
     function updateDisplay(){
       timeDisplay.textContent = formatTime(remainingSeconds);
+      if (!ring) return;
       const pct = remainingSeconds / totalSeconds;
       const offset = CIRCUMFERENCE * (1 - pct);
       ring.style.strokeDashoffset = offset;
@@ -694,7 +741,7 @@
 
     const inputs = [
       bgUrlInput,totalSecondsInput,fontNameInput,fontSizeInput,
-      offsetXInput,offsetYInput,coreScaleInput,
+      offsetXInput,offsetYInput,ringOffsetXInput,ringOffsetYInput,ringEnabledInput,
       ringRadiusInput,ringWidthInput,
       mainColorInput,trackColorInput,digitColorInput,glowEnabledInput
     ];
