@@ -223,6 +223,7 @@
       background-size:contain;
       background-repeat:no-repeat;
       background-position:center;
+      overflow:visible; /* не режем свечение */
     }
     .timer-preview-core{
       position:absolute;
@@ -234,10 +235,12 @@
       display:flex;
       align-items:center;
       justify-content:center;
+      overflow:visible;
     }
     .timer-preview-core svg{
       position:absolute;
       inset:0;
+      overflow:visible;
     }
     .timer-ring-bg{
       fill:none;
@@ -277,8 +280,8 @@
 <body>
   <h1>Таймер КГБ</h1>
   <p class="subtitle">
-    Неоновый таймер для Genially: слева настраиваешь фон, шрифт и размеры,
-    положение и толщину полоски, цвета и свечение. Справа — готовый HTML для iframe.
+    Неоновый таймер для Genially: слева настраиваешь фон, шрифт, размер и положение,
+    радиус и толщину полоски. Справа — готовый HTML для iframe. То, что в Preview, будет в игре.
   </p>
 
   <div class="layout">
@@ -321,11 +324,16 @@
         </div>
       </div>
 
+      <div class="control-group">
+        <label for="coreScale">Размер кольца (% от картинки)</label>
+        <input type="range" id="coreScale" min="30" max="100" step="1" value="65">
+      </div>
+
       <hr class="hr-soft">
 
       <div class="control-group">
-        <label for="ringRadius">Радиус полоски (viewBox, 30–46)</label>
-        <input type="range" id="ringRadius" min="30" max="46" step="0.5" value="38">
+        <label for="ringRadius">Радиус полоски (viewBox, 25–48)</label>
+        <input type="range" id="ringRadius" min="25" max="48" step="0.5" value="38">
       </div>
 
       <div class="control-group">
@@ -374,8 +382,8 @@
         </div>
       </div>
       <p class="hint">
-        Сдвиг таймера двигает и цифры, и полоску вместе — подгоняешь под «экран» часов.
-        Радиус и толщина полоски задаются в SVG, поэтому в игре ничего не обрезается.
+        Сдвиг таймера двигает и цифры, и полоску вместе. «Размер кольца» масштабирует
+        кольцо целиком. Радиус/толщина позволяют подогнать по ободу часов.
       </p>
     </div>
 
@@ -384,8 +392,8 @@
       <h2>Готовый HTML</h2>
       <textarea id="output" spellcheck="false"></textarea>
       <p class="hint">
-        Скопируй код целиком в iframe / расширение Genially.
-        Таймер центрируется в iframe, масштабируется вместе с ним, прогресс идёт по кругу неоновой полоской.
+        Скопируй код целиком в iframe / расширение Genially. Таймер центрируется в iframe,
+        масштабируется вместе с ним, а неоновая полоска показывает прогресс по кругу.
       </p>
     </div>
   </div>
@@ -403,6 +411,7 @@
 
     const offsetXInput      = document.getElementById('offsetX');
     const offsetYInput      = document.getElementById('offsetY');
+    const coreScaleInput    = document.getElementById('coreScale');
 
     const ringRadiusInput   = document.getElementById('ringRadius');
     const ringWidthInput    = document.getElementById('ringWidth');
@@ -444,6 +453,7 @@
       const fontSize    = parseFloat(fontSizeInput.value) || 2.8;
       const offsetX     = parseInt(offsetXInput.value,10) || 0;
       const offsetY     = parseInt(offsetYInput.value,10) || 0;
+      const coreScale   = parseInt(coreScaleInput.value,10) || 65;
       const ringRadius  = parseFloat(ringRadiusInput.value) || 38;
       const ringWidth   = parseFloat(ringWidthInput.value) || 6;
       const mainColor   = mainColorInput.value || '#7fd7ff';
@@ -454,9 +464,13 @@
       previewTotalSeconds = totalSec;
       previewOuter.style.backgroundImage = bgUrl ? `url("${bgUrl}")` : 'none';
 
+      // размер кольца (процент от картинки)
+      previewCore.style.width = coreScale + '%';
+
       // центр таймера
-      previewCore.style.transform =
-        `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+      previewCore.style.left = `calc(50% + ${offsetX}px)`;
+      previewCore.style.top  = `calc(50% + ${offsetY}px)`;
+
       // шрифт
       previewTimeEl.style.fontFamily = `'${fontName}', cursive`;
       previewTimeEl.style.fontSize   = fontSize + 'em';
@@ -486,7 +500,6 @@
       previewRingFg.style.strokeWidth = ringWidth;
 
       previewRingFg.style.strokeDasharray = previewCircumference;
-      // offset обновим в функции updatePreviewRingProgress
 
       updateFontLink(fontName);
     }
@@ -524,6 +537,7 @@
       const fontSize    = parseFloat(fontSizeInput.value) || 2.8;
       const offsetX     = parseInt(offsetXInput.value,10) || 0;
       const offsetY     = parseInt(offsetYInput.value,10) || 0;
+      const coreScale   = parseInt(coreScaleInput.value,10) || 65;
       const ringRadius  = parseFloat(ringRadiusInput.value) || 38;
       const ringWidth   = parseFloat(ringWidthInput.value) || 6;
       const mainColor   = mainColorInput.value || '#7fd7ff';
@@ -570,23 +584,25 @@
       background-position:center;
       background-repeat:no-repeat;
       pointer-events:none;
-      overflow:hidden;
+      overflow:visible; /* не режем свечение */
     }
     .timer-core{
       position:absolute;
       left:calc(50% + ${offsetX}px);
       top:calc(50% + ${offsetY}px);
       transform:translate(-50%,-50%);
-      width:65vmin;
+      width:${coreScale}%;
       max-width:100%;
       aspect-ratio:1/1;
       display:flex;
       align-items:center;
       justify-content:center;
+      overflow:visible;
     }
     .timer-core svg{
       position:absolute;
       inset:0;
+      overflow:visible;
     }
     .timer-ring-bg{
       fill:none;
@@ -676,24 +692,22 @@
       outputTextarea.value = code;
     }
 
-    // ===== СЛУШАТЕЛИ =====
     const inputs = [
       bgUrlInput,totalSecondsInput,fontNameInput,fontSizeInput,
-      offsetXInput,offsetYInput,
+      offsetXInput,offsetYInput,coreScaleInput,
       ringRadiusInput,ringWidthInput,
       mainColorInput,trackColorInput,digitColorInput,glowEnabledInput
     ];
     inputs.forEach(el => {
       el.addEventListener('input', () => {
         applyPreviewStyles();
-        // перезапуск превью-таймера, чтобы прогресс соответствовал новому времени
         startPreviewTimer();
         generateCode();
       });
     });
     document.getElementById('generateBtn').addEventListener('click', generateCode);
 
-    // ===== СТАРТ PREVIEW =====
+    // старт
     applyPreviewStyles();
     startPreviewTimer();
     generateCode();
