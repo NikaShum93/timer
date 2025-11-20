@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <title>Ice Timer Sparkle Editor</title>
   <style>
-    :root{
-      color-scheme: dark;
-    }
+    :root{ color-scheme: dark; }
     *{ box-sizing:border-box; }
     body{
       margin:0;
@@ -37,7 +35,7 @@
       box-shadow:0 0 24px rgba(0,0,0,0.6);
     }
     .controls{
-      width:340px;
+      width:360px;
       max-width:100%;
     }
     .controls h2,
@@ -194,7 +192,7 @@
 <body>
   <h1>Ice Timer Sparkle Editor</h1>
   <p class="subtitle">
-    Центр круга = центр цифр. Радиус задаётся в процентах от кадра (не зависит от текста).
+    Цифры и круг блёсток настраиваются отдельно: у круга свой радиус и своё положение.  
     Справа — готовый HTML для iframe / Genially.
   </p>
 
@@ -225,19 +223,34 @@
         <input type="text" id="fontName" value="Emilys Candy">
       </div>
 
+      <hr style="border-color:#22294a; margin:10px 0;">
+
+      <div class="control-inline">
+        <div class="control-group">
+          <label for="digitOffsetX">Смещение ЦИФР (X, px)</label>
+          <input type="range" id="digitOffsetX" min="-150" max="150" value="0">
+        </div>
+        <div class="control-group">
+          <label for="digitOffsetY">Смещение ЦИФР (Y, px)</label>
+          <input type="range" id="digitOffsetY" min="-150" max="150" value="0">
+        </div>
+      </div>
+
+      <hr style="border-color:#22294a; margin:10px 0;">
+
       <div class="control-group">
-        <label for="radiusFactor">Радиус круга (% от кадра)</label>
-        <input type="range" id="radiusFactor" min="0.15" max="0.6" step="0.01" value="0.35">
+        <label for="radiusFactor">Радиус КРУГА блёсток (% от кадра)</label>
+        <input type="range" id="radiusFactor" min="0.15" max="0.8" step="0.01" value="0.45">
       </div>
 
       <div class="control-inline">
         <div class="control-group">
-          <label for="offsetX">Смещение центра (X, px)</label>
-          <input type="range" id="offsetX" min="-120" max="120" value="0">
+          <label for="sparkOffsetX">Смещение КРУГА (X, px)</label>
+          <input type="range" id="sparkOffsetX" min="-200" max="200" value="0">
         </div>
         <div class="control-group">
-          <label for="offsetY">Смещение центра (Y, px)</label>
-          <input type="range" id="offsetY" min="-120" max="120" value="0">
+          <label for="sparkOffsetY">Смещение КРУГА (Y, px)</label>
+          <input type="range" id="sparkOffsetY" min="-200" max="200" value="0">
         </div>
       </div>
 
@@ -279,7 +292,7 @@
         </div>
       </div>
       <p class="hint">
-        Радиус задаётся от размера фрейма, а не от ширины времени — кольцо не скачет.
+        Цифры и круг двигаются независимо. Радиус — от размера фрейма, поэтому можно сделать его большим.
       </p>
     </div>
 
@@ -288,8 +301,7 @@
       <h2>Готовый HTML</h2>
       <textarea id="output" spellcheck="false"></textarea>
       <p class="hint">
-        Скопируй код в iframe / расширение Genially. Таймер центрируется и масштабируется вместе с iframe;
-        прогресс показывает тонкое кольцо из блёсток вокруг цифр.
+        Скопируй код в iframe / расширение Genially. Круг из блёсток исчезает по кругу, как полоска прогресса.
       </p>
     </div>
   </div>
@@ -300,9 +312,14 @@
     const totalSecondsInput = document.getElementById('totalSeconds');
     const fontNameInput     = document.getElementById('fontName');
     const fontSizeInput     = document.getElementById('fontSize');
+
+    const digitOffsetXInput = document.getElementById('digitOffsetX');
+    const digitOffsetYInput = document.getElementById('digitOffsetY');
+
     const radiusFactorInput = document.getElementById('radiusFactor');
-    const offsetXInput      = document.getElementById('offsetX');
-    const offsetYInput      = document.getElementById('offsetY');
+    const sparkOffsetXInput = document.getElementById('sparkOffsetX');
+    const sparkOffsetYInput = document.getElementById('sparkOffsetY');
+
     const densityInput      = document.getElementById('density');
     const digitColorInput   = document.getElementById('digitColor');
     const glowColorInput    = document.getElementById('glowColor');
@@ -321,9 +338,11 @@
       totalSeconds: 30,
       fontName: 'Emilys Candy',
       fontSizeEm: 2.8,
-      radiusFactor: 0.35, // доля от min(width,height)/2
-      offsetX: 0,
-      offsetY: 0,
+      digitOffsetX: 0,
+      digitOffsetY: 0,
+      radiusFactor: 0.45,
+      sparkOffsetX: 0,
+      sparkOffsetY: 0,
       density: 1.0,
       digitColor: '#e9f8ff',
       glowColor: '#7fd7ff',
@@ -350,9 +369,11 @@
       previewConfig.totalSeconds  = parseInt(totalSecondsInput.value,10) || 30;
       previewConfig.fontName      = fontNameInput.value.trim() || 'Emilys Candy';
       previewConfig.fontSizeEm    = parseFloat(fontSizeInput.value) || 2.8;
-      previewConfig.radiusFactor  = parseFloat(radiusFactorInput.value) || 0.35;
-      previewConfig.offsetX       = parseInt(offsetXInput.value,10) || 0;
-      previewConfig.offsetY       = parseInt(offsetYInput.value,10) || 0;
+      previewConfig.digitOffsetX  = parseInt(digitOffsetXInput.value,10) || 0;
+      previewConfig.digitOffsetY  = parseInt(digitOffsetYInput.value,10) || 0;
+      previewConfig.radiusFactor  = parseFloat(radiusFactorInput.value) || 0.45;
+      previewConfig.sparkOffsetX  = parseInt(sparkOffsetXInput.value,10) || 0;
+      previewConfig.sparkOffsetY  = parseInt(sparkOffsetYInput.value,10) || 0;
       previewConfig.density       = parseFloat(densityInput.value) || 1.0;
       previewConfig.digitColor    = digitColorInput.value || '#e9f8ff';
       previewConfig.glowColor     = glowColorInput.value || '#7fd7ff';
@@ -367,8 +388,8 @@
         ? `0 0 8px ${glow},0 0 16px ${glow}`
         : 'none';
 
-      previewTimeEl.style.left = `calc(50% + ${previewConfig.offsetX}px)`;
-      previewTimeEl.style.top  = `calc(50% + ${previewConfig.offsetY}px)`;
+      previewTimeEl.style.left = `calc(50% + ${previewConfig.digitOffsetX}px)`;
+      previewTimeEl.style.top  = `calc(50% + ${previewConfig.digitOffsetY}px)`;
 
       updateFontLink(previewConfig.fontName);
     }
@@ -381,13 +402,11 @@
       previewCtx.setTransform(dpr,0,0,dpr,0,0);
     }
 
-    // центр = центр цифр, радиус = % от min(width,height)
+    // центр круга: центр кадра + смещения КРУГА
     function getPreviewCircleMetrics(){
       const canvasRect = previewCanvas.getBoundingClientRect();
-      const textRect   = previewTimeEl.getBoundingClientRect();
-
-      const cx = (textRect.left + textRect.width/2) - canvasRect.left;
-      const cy = (textRect.top  + textRect.height/2) - canvasRect.top;
+      const cx = canvasRect.width  / 2 + previewConfig.sparkOffsetX;
+      const cy = canvasRect.height / 2 + previewConfig.sparkOffsetY;
 
       const minSize = Math.min(canvasRect.width, canvasRect.height);
       const r = (minSize/2) * previewConfig.radiusFactor;
@@ -423,7 +442,7 @@
 
       const {cx,cy,r} = getPreviewCircleMetrics();
 
-      const DOT_BASE = 80; // немного точек = видно зерно
+      const DOT_BASE = 80;
       const dots = Math.max(12, Math.round(DOT_BASE * previewConfig.density * prog));
 
       const fullCircle = 2*Math.PI;
@@ -452,7 +471,7 @@
         ctx.fillStyle = previewConfig.glowColor;
         if(previewConfig.glowEnabled){
           ctx.shadowColor = previewConfig.glowColor;
-          ctx.shadowBlur  = 3;   // маленький blur, чтобы это были именно точки
+          ctx.shadowBlur  = 3;
         }else{
           ctx.shadowColor = 'transparent';
           ctx.shadowBlur  = 0;
@@ -474,9 +493,13 @@
       const fontName     = fontNameInput.value.trim() || 'Emilys Candy';
       const fontParam    = fontName.replace(/\s+/g,'+');
       const fontSizeEm   = parseFloat(fontSizeInput.value) || 2.8;
-      const radiusFactor = parseFloat(radiusFactorInput.value) || 0.35;
-      const offsetX      = parseInt(offsetXInput.value,10) || 0;
-      const offsetY      = parseInt(offsetYInput.value,10) || 0;
+
+      const digitOffsetX = parseInt(digitOffsetXInput.value,10) || 0;
+      const digitOffsetY = parseInt(digitOffsetYInput.value,10) || 0;
+      const radiusFactor = parseFloat(radiusFactorInput.value) || 0.45;
+      const sparkOffsetX = parseInt(sparkOffsetXInput.value,10) || 0;
+      const sparkOffsetY = parseInt(sparkOffsetYInput.value,10) || 0;
+
       const density      = parseFloat(densityInput.value) || 1.0;
       const digitColor   = digitColorInput.value || '#e9f8ff';
       const glowColor    = glowColorInput.value || '#7fd7ff';
@@ -536,8 +559,8 @@
     }
     #time-display{
       position:absolute;
-      left:calc(50% + ${offsetX}px);
-      top:calc(50% + ${offsetY}px);
+      left:calc(50% + ${digitOffsetX}px);
+      top:calc(50% + ${digitOffsetY}px);
       transform:translate(-50%,-50%);
       font-family:'${fontName}',cursive;
       font-size:${fontSizeEm}em;
@@ -559,10 +582,12 @@
 
   <script>
     const INITIAL_TOTAL_SECONDS = ${totalSeconds};
-    const DOT_BASE = ${DOT_BASE};
-    const GLOW_COLOR = "${glowColor}";
-    const GLOW_ENABLED = ${glowEnabled ? 'true':'false'};
+    const DOT_BASE      = ${DOT_BASE};
+    const GLOW_COLOR    = "${glowColor}";
+    const GLOW_ENABLED  = ${glowEnabled ? 'true':'false'};
     const RADIUS_FACTOR = ${radiusFactor};
+    const SPARK_OFFSET_X= ${sparkOffsetX};
+    const SPARK_OFFSET_Y= ${sparkOffsetY};
 
     let totalSeconds = INITIAL_TOTAL_SECONDS;
     let remainingSeconds = totalSeconds;
@@ -596,10 +621,8 @@
 
     function getCircleMetrics(){
       const canvasRect = canvas.getBoundingClientRect();
-      const textRect   = timeDisplay.getBoundingClientRect();
-
-      const cx = (textRect.left + textRect.width/2) - canvasRect.left;
-      const cy = (textRect.top  + textRect.height/2) - canvasRect.top;
+      const cx = canvasRect.width  / 2 + SPARK_OFFSET_X;
+      const cy = canvasRect.height / 2 + SPARK_OFFSET_Y;
 
       const minSize = Math.min(canvasRect.width, canvasRect.height);
       const r = (minSize/2) * RADIUS_FACTOR;
@@ -685,10 +708,10 @@
       outputTextarea.value = code;
     }
 
-    // ===== СЛУШАТЕЛИ =====
     const inputs = [
       bgUrlInput,totalSecondsInput,fontNameInput,fontSizeInput,
-      radiusFactorInput,offsetXInput,offsetYInput,
+      digitOffsetXInput,digitOffsetYInput,
+      radiusFactorInput,sparkOffsetXInput,sparkOffsetYInput,
       densityInput,digitColorInput,glowColorInput,glowEnabledInput
     ];
     inputs.forEach(el => {
@@ -699,7 +722,6 @@
     });
     generateBtn.addEventListener('click', generateCode);
 
-    // ==== ИНИЦИАЛИЗАЦИЯ ПРЕВЬЮ ====
     let previewTimerId = null;
     function startPreviewCountdown(){
       if(previewTimerId) clearInterval(previewTimerId);
@@ -714,7 +736,6 @@
       resizePreviewCanvas();
     });
 
-    // старт
     applyPreviewStyles();
     resizePreviewCanvas();
     startPreviewCountdown();
