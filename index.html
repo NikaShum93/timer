@@ -2,26 +2,36 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Ice Timer Sparkle Editor</title>
+  <title>Таймер КГБ — редактор</title>
   <style>
-    :root{ color-scheme: dark; }
-    *{ box-sizing:border-box; }
+    :root{
+      color-scheme: dark;
+    }
+    *{
+      box-sizing:border-box;
+    }
     body{
       margin:0;
-      padding:20px;
+      padding:24px 24px 40px;
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:#050712;
+      background:radial-gradient(circle at top, #16163b 0, #050712 55%, #02030a 100%);
       color:#f5f5ff;
     }
     h1{
       margin:0 0 4px 0;
-      font-size:1.4rem;
+      font-size:1.7rem;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:#f2f2ff;
+      text-shadow:0 0 14px #6df2ff, 0 0 32px #4af2c5;
     }
     .subtitle{
-      font-size:0.82rem;
-      color:#a9a9ff;
-      margin-bottom:16px;
+      font-size:0.84rem;
+      color:#a8b0ff;
+      margin-bottom:18px;
+      max-width:780px;
     }
+
     .layout{
       display:flex;
       gap:20px;
@@ -29,11 +39,31 @@
       flex-wrap:wrap;
     }
     .panel{
-      background:#0c0f20;
-      border-radius:14px;
-      padding:14px 16px;
-      box-shadow:0 0 24px rgba(0,0,0,0.6);
+      background:linear-gradient(145deg,#090c23,#131633);
+      border-radius:16px;
+      padding:14px 16px 16px;
+      box-shadow:
+        0 0 0 1px rgba(102,153,255,0.25),
+        0 22px 40px rgba(0,0,0,0.65);
+      position:relative;
+      overflow:hidden;
     }
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:
+        radial-gradient(circle at 0 0, rgba(148,255,223,0.18) 0, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(125,158,255,0.18) 0, transparent 50%);
+      opacity:0.5;
+      mix-blend-mode:screen;
+      pointer-events:none;
+    }
+    .panel > *{
+      position:relative;
+      z-index:1;
+    }
+
     .controls{
       width:360px;
       max-width:100%;
@@ -41,16 +71,18 @@
     .controls h2,
     .preview-wrap h2,
     .output-wrap h2{
-      font-size:1rem;
+      font-size:0.96rem;
       margin:0 0 8px 0;
-      color:#d0d0ff;
+      color:#e0e2ff;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
     }
     .control-group{
       margin-bottom:10px;
     }
     .control-group label{
       display:block;
-      font-size:0.82rem;
+      font-size:0.8rem;
       margin-bottom:4px;
     }
     .control-inline{
@@ -67,19 +99,30 @@
     select{
       width:100%;
       padding:6px 8px;
-      border-radius:6px;
+      border-radius:8px;
       border:1px solid #353863;
       background:#050712;
       color:#f5f5ff;
       font-size:0.85rem;
+      outline:none;
+      transition:border-color .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+    input[type="number"]:focus,
+    input[type="text"]:focus,
+    input[type="url"]:focus,
+    select:focus{
+      border-color:#63f2ff;
+      box-shadow:0 0 0 1px rgba(99,242,255,0.5);
+      background:#040716;
     }
     input[type="color"]{
       width:100%;
       height:32px;
       padding:0;
-      border-radius:6px;
+      border-radius:8px;
       border:1px solid #353863;
       background:#050712;
+      cursor:pointer;
     }
     input[type="range"]{
       width:100%;
@@ -93,17 +136,28 @@
     }
     button{
       width:100%;
-      padding:8px 10px;
-      border-radius:8px;
+      padding:9px 10px;
+      border-radius:999px;
       border:none;
       cursor:pointer;
       font-weight:600;
-      margin-top:8px;
-      background:#4af2c5;
-      color:#050712;
-      box-shadow:0 0 18px rgba(74,242,197,0.45);
+      margin-top:10px;
+      background:linear-gradient(135deg,#4af2c5,#63f2ff);
+      color:#041013;
+      box-shadow:0 0 18px rgba(74,242,197,0.55);
+      letter-spacing:0.03em;
+      text-transform:uppercase;
     }
-    button:hover{ filter:brightness(1.05); }
+    button:hover{
+      filter:brightness(1.06);
+      box-shadow:0 0 24px rgba(99,242,255,0.7);
+    }
+
+    .hr-soft{
+      border:none;
+      border-top:1px solid #262b4b;
+      margin:10px 0;
+    }
 
     .preview-wrap{
       flex:0 0 320px;
@@ -121,7 +175,9 @@
       justify-content:center;
       position:relative;
       overflow:hidden;
-      box-shadow:0 0 24px rgba(0,0,0,0.85);
+      box-shadow:
+        0 0 0 1px rgba(102,153,255,0.25),
+        0 20px 36px rgba(0,0,0,0.8);
     }
 
     .output-wrap{
@@ -132,18 +188,24 @@
       width:100%;
       min-height:380px;
       padding:10px;
-      border-radius:10px;
+      border-radius:12px;
       border:1px solid #353863;
       background:#050712;
       color:#f5f5ff;
       font-family:"JetBrains Mono","Fira Code",monospace;
       font-size:0.8rem;
       resize:vertical;
+      outline:none;
+    }
+    textarea:focus{
+      border-color:#63f2ff;
+      box-shadow:0 0 0 1px rgba(99,242,255,0.5);
+      background:#030511;
     }
     .hint{
       font-size:0.8rem;
       color:#a4a4ff;
-      margin-top:4px;
+      margin-top:6px;
     }
 
     /* ===== ПРЕВЬЮ ТАЙМЕРА ===== */
@@ -180,20 +242,31 @@
       font-family:'Emilys Candy',cursive;
       font-size:2.8em;
       color:#e9f8ff;
-      text-shadow:0 0 8px #7fd7ff,0 0 16px #7fd7ff;
+      text-shadow:0 0 10px #7fd7ff,0 0 22px #7fd7ff;
       user-select:none;
       z-index:2;
       left:50%;
       top:50%;
     }
+
+    /* ===== ФУТЕР ===== */
+    .footer{
+      margin-top:18px;
+      text-align:center;
+      font-size:0.8rem;
+      color:#8086ff;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      opacity:0.9;
+    }
   </style>
   <link id="preview-font-link" rel="stylesheet" />
 </head>
 <body>
-  <h1>Ice Timer Sparkle Editor</h1>
+  <h1>Таймер КГБ</h1>
   <p class="subtitle">
-    Цифры и круг блёсток настраиваются отдельно: у круга свой радиус и своё положение.  
-    Справа — готовый HTML для iframe / Genially.
+    Редактор неонового таймера: слева настраиваешь фон, шрифт, цвет и положение цифр,
+    размер и позицию круга блёсток. Справа получаешь готовый HTML для iframe / Genially.
   </p>
 
   <div class="layout">
@@ -223,7 +296,7 @@
         <input type="text" id="fontName" value="Emilys Candy">
       </div>
 
-      <hr style="border-color:#22294a; margin:10px 0;">
+      <hr class="hr-soft">
 
       <div class="control-inline">
         <div class="control-group">
@@ -236,21 +309,21 @@
         </div>
       </div>
 
-      <hr style="border-color:#22294a; margin:10px 0;">
+      <hr class="hr-soft">
 
       <div class="control-group">
         <label for="radiusFactor">Радиус КРУГА блёсток (% от кадра)</label>
-        <input type="range" id="radiusFactor" min="0.15" max="0.8" step="0.01" value="0.45">
+        <input type="range" id="radiusFactor" min="0.10" max="1.20" step="0.01" value="0.70">
       </div>
 
       <div class="control-inline">
         <div class="control-group">
           <label for="sparkOffsetX">Смещение КРУГА (X, px)</label>
-          <input type="range" id="sparkOffsetX" min="-200" max="200" value="0">
+          <input type="range" id="sparkOffsetX" min="-300" max="300" value="0">
         </div>
         <div class="control-group">
           <label for="sparkOffsetY">Смещение КРУГА (Y, px)</label>
-          <input type="range" id="sparkOffsetY" min="-200" max="200" value="0">
+          <input type="range" id="sparkOffsetY" min="-300" max="300" value="80">
         </div>
       </div>
 
@@ -292,7 +365,8 @@
         </div>
       </div>
       <p class="hint">
-        Цифры и круг двигаются независимо. Радиус — от размера фрейма, поэтому можно сделать его большим.
+        Цифры и круг двигаются независимо. Радиус — от размера фрейма, можно подогнать под обод часов.
+        Прогресс исчезает по кругу светящимся хвостом и блёстками.
       </p>
     </div>
 
@@ -301,13 +375,18 @@
       <h2>Готовый HTML</h2>
       <textarea id="output" spellcheck="false"></textarea>
       <p class="hint">
-        Скопируй код в iframe / расширение Genially. Круг из блёсток исчезает по кругу, как полоска прогресса.
+        Скопируй код целиком в iframe / расширение Genially.
+        Таймер центрируется в iframe, масштабируется вместе с ним, а неоновое кольцо показывает прогресс.
       </p>
     </div>
   </div>
 
+  <div class="footer">
+    Корпорация Геймификации Будущего © 2025
+  </div>
+
   <script>
-    // ===== ЭЛЕМЕНТЫ =====
+    // ===== ЭЛЕМЕНТЫ УПРАВЛЕНИЯ =====
     const bgUrlInput        = document.getElementById('bgUrl');
     const totalSecondsInput = document.getElementById('totalSeconds');
     const fontNameInput     = document.getElementById('fontName');
@@ -340,9 +419,9 @@
       fontSizeEm: 2.8,
       digitOffsetX: 0,
       digitOffsetY: 0,
-      radiusFactor: 0.45,
+      radiusFactor: 0.70,
       sparkOffsetX: 0,
-      sparkOffsetY: 0,
+      sparkOffsetY: 80,
       density: 1.0,
       digitColor: '#e9f8ff',
       glowColor: '#7fd7ff',
@@ -371,9 +450,9 @@
       previewConfig.fontSizeEm    = parseFloat(fontSizeInput.value) || 2.8;
       previewConfig.digitOffsetX  = parseInt(digitOffsetXInput.value,10) || 0;
       previewConfig.digitOffsetY  = parseInt(digitOffsetYInput.value,10) || 0;
-      previewConfig.radiusFactor  = parseFloat(radiusFactorInput.value) || 0.45;
+      previewConfig.radiusFactor  = parseFloat(radiusFactorInput.value) || 0.70;
       previewConfig.sparkOffsetX  = parseInt(sparkOffsetXInput.value,10) || 0;
-      previewConfig.sparkOffsetY  = parseInt(sparkOffsetYInput.value,10) || 0;
+      previewConfig.sparkOffsetY  = parseInt(sparkOffsetYInput.value,10) || 80;
       previewConfig.density       = parseFloat(densityInput.value) || 1.0;
       previewConfig.digitColor    = digitColorInput.value || '#e9f8ff';
       previewConfig.glowColor     = glowColorInput.value || '#7fd7ff';
@@ -385,7 +464,7 @@
 
       const glow = previewConfig.glowEnabled ? previewConfig.glowColor : 'transparent';
       previewTimeEl.style.textShadow = previewConfig.glowEnabled
-        ? `0 0 8px ${glow},0 0 16px ${glow}`
+        ? `0 0 10px ${glow},0 0 24px ${glow}`
         : 'none';
 
       previewTimeEl.style.left = `calc(50% + ${previewConfig.digitOffsetX}px)`;
@@ -433,6 +512,7 @@
       updatePreviewTime();
     }
 
+    // ===== РИСОВАНИЕ КРУГА В PREVIEW (луч + блёстки) =====
     function drawPreviewSparkles(timeMs){
       const ctx = previewCtx;
       ctx.clearRect(0,0,previewCanvas.width,previewCanvas.height);
@@ -442,42 +522,83 @@
 
       const {cx,cy,r} = getPreviewCircleMetrics();
 
-      const DOT_BASE = 80;
-      const dots = Math.max(12, Math.round(DOT_BASE * previewConfig.density * prog));
-
       const fullCircle = 2*Math.PI;
       const arcAngle   = fullCircle * prog;
       const startAngle = -Math.PI/2;
+      const t          = (timeMs || 0)/1000;
 
-      const t = (timeMs || 0)/1000;
-      const baseAlpha = 0.45 + 0.35*prog;
+      // --- светящийся луч ---
+      ctx.save();
+      ctx.strokeStyle = previewConfig.glowColor;
+      ctx.lineCap = "round";
+
+      const beamWidth = Math.max(2, r * 0.06);
+      ctx.lineWidth = beamWidth;
+
+      if (previewConfig.glowEnabled){
+        ctx.shadowColor = previewConfig.glowColor;
+        ctx.shadowBlur  = beamWidth * 1.5;
+      } else {
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur  = 0;
+      }
+
+      const segments = 80;
+      for(let i=0;i<segments;i++){
+        const t0 = i/segments;
+        const t1 = (i+1)/segments;
+        const a0 = startAngle + arcAngle * t0;
+        const a1 = startAngle + arcAngle * t1;
+
+        const alpha = (0.2 + 0.8 * t1) * (0.3 + 0.7*prog);
+        ctx.globalAlpha = alpha;
+
+        const x0 = cx + Math.cos(a0)*r;
+        const y0 = cy + Math.sin(a0)*r;
+        const x1 = cx + Math.cos(a1)*r;
+        const y1 = cy + Math.sin(a1)*r;
+
+        ctx.beginPath();
+        ctx.moveTo(x0,y0);
+        ctx.lineTo(x1,y1);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // --- блёстки вокруг дуги ---
+      const DOT_BASE = 110;
+      const dots = Math.max(20, Math.round(DOT_BASE * previewConfig.density * prog));
+      const baseAlpha = 0.5 + 0.3*prog;
 
       for(let i=0;i<dots;i++){
-        const p = dots===1 ? 0 : i/(dots-1);
-        const angle = startAngle + p*arcAngle;
+        const bias   = Math.random()**1.5; // сгущаем к кончику
+        const tArc   = bias * prog;
+        const angle  = startAngle + arcAngle * tArc;
 
-        const jitter = (pseudoRand01(i,1)-0.5)*r*0.02;
-        const rr = r + jitter;
+        const jitter = (pseudoRand01(i,1)-0.5) * r * 0.07;
+        const rr     = r + jitter;
 
         const x = cx + Math.cos(angle)*rr;
         const y = cy + Math.sin(angle)*rr;
 
-        const radius = 0.5 + 0.3*Math.sin(t*2.1 + i);
-        const alpha  = baseAlpha*(0.7 + 0.3*pseudoRand01(i,3));
+        const radius = 0.6 + Math.random()*0.8;
+        const alpha  = baseAlpha * (0.6 + 0.4*pseudoRand01(i,3));
 
         ctx.globalAlpha = Math.max(0.15, Math.min(1, alpha));
         ctx.beginPath();
-        ctx.arc(x,y,Math.max(0.3,radius),0,Math.PI*2);
+        ctx.arc(x,y,radius,0,Math.PI*2);
         ctx.fillStyle = previewConfig.glowColor;
+
         if(previewConfig.glowEnabled){
           ctx.shadowColor = previewConfig.glowColor;
-          ctx.shadowBlur  = 3;
+          ctx.shadowBlur  = 4;
         }else{
-          ctx.shadowColor = 'transparent';
+          ctx.shadowColor = "transparent";
           ctx.shadowBlur  = 0;
         }
         ctx.fill();
       }
+
       ctx.globalAlpha = 1;
     }
 
@@ -496,24 +617,24 @@
 
       const digitOffsetX = parseInt(digitOffsetXInput.value,10) || 0;
       const digitOffsetY = parseInt(digitOffsetYInput.value,10) || 0;
-      const radiusFactor = parseFloat(radiusFactorInput.value) || 0.45;
+      const radiusFactor = parseFloat(radiusFactorInput.value) || 0.70;
       const sparkOffsetX = parseInt(sparkOffsetXInput.value,10) || 0;
-      const sparkOffsetY = parseInt(sparkOffsetYInput.value,10) || 0;
+      const sparkOffsetY = parseInt(sparkOffsetYInput.value,10) || 80;
 
       const density      = parseFloat(densityInput.value) || 1.0;
       const digitColor   = digitColorInput.value || '#e9f8ff';
       const glowColor    = glowColorInput.value || '#7fd7ff';
       const glowEnabled  = glowEnabledInput.checked;
 
-      const DOT_BASE = Math.round(80 * density);
+      const DOT_BASE = Math.round(110 * density);
 
       const glowTextShadow = glowEnabled
-        ? `text-shadow:0 0 8px ${glowColor},0 0 16px ${glowColor};`
+        ? `text-shadow:0 0 10px ${glowColor},0 0 24px ${glowColor};`
         : `text-shadow:none;`;
 
       const code = `
 <div class="card-iframe">
-  <!-- Ice Timer Sparkle -->
+  <!-- Таймер КГБ — неоновый круг блёсток -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=${fontParam}&display=swap" rel="stylesheet">
@@ -640,37 +761,79 @@
       const fullCircle = 2*Math.PI;
       const arcAngle   = fullCircle * progress;
       const startAngle = -Math.PI/2;
-
-      const dots = Math.max(12, Math.round(DOT_BASE * progress));
       const t = (timeMs||0)/1000;
-      const baseAlpha = 0.45 + 0.35*progress;
+
+      // --- неоновый луч ---
+      ctx.save();
+      ctx.strokeStyle = GLOW_COLOR;
+      ctx.lineCap = "round";
+
+      const beamWidth = Math.max(2, r*0.06);
+      ctx.lineWidth = beamWidth;
+
+      if(GLOW_ENABLED){
+        ctx.shadowColor = GLOW_COLOR;
+        ctx.shadowBlur  = beamWidth * 1.5;
+      }else{
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur  = 0;
+      }
+
+      const segments = 80;
+      for(let i=0;i<segments;i++){
+        const t0 = i/segments;
+        const t1 = (i+1)/segments;
+        const a0 = startAngle + arcAngle * t0;
+        const a1 = startAngle + arcAngle * t1;
+
+        const alpha = (0.2 + 0.8 * t1) * (0.3 + 0.7*progress);
+        ctx.globalAlpha = alpha;
+
+        const x0 = cx + Math.cos(a0)*r;
+        const y0 = cy + Math.sin(a0)*r;
+        const x1 = cx + Math.cos(a1)*r;
+        const y1 = cy + Math.sin(a1)*r;
+
+        ctx.beginPath();
+        ctx.moveTo(x0,y0);
+        ctx.lineTo(x1,y1);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // --- блёстки вокруг дуги ---
+      const dotsBase = DOT_BASE || 110;
+      const dots = Math.max(20, Math.round(dotsBase * progress));
+      const baseAlpha = 0.5 + 0.3*progress;
 
       for(let i=0;i<dots;i++){
-        const p = dots===1 ? 0 : i/(dots-1);
-        const angle = startAngle + p*arcAngle;
+        const bias   = Math.random()**1.5;
+        const tArc   = bias * progress;
+        const angle  = startAngle + arcAngle * tArc;
 
-        const jitter = (pseudoRand01(i,1)-0.5)*r*0.02;
-        const rr = r + jitter;
+        const jitter = (pseudoRand01(i,1)-0.5) * r * 0.07;
+        const rr     = r + jitter;
 
         const x = cx + Math.cos(angle)*rr;
         const y = cy + Math.sin(angle)*rr;
 
-        const radius = 0.5 + 0.3*Math.sin(t*2.1 + i);
-        const alpha  = baseAlpha*(0.7 + 0.3*pseudoRand01(i,3));
+        const radius = 0.6 + Math.random()*0.8;
+        const alpha  = baseAlpha * (0.6 + 0.4*pseudoRand01(i,3));
 
         ctx.globalAlpha = Math.max(0.15, Math.min(1, alpha));
         ctx.beginPath();
-        ctx.arc(x,y,Math.max(0.3,radius),0,Math.PI*2);
+        ctx.arc(x,y,radius,0,Math.PI*2);
         ctx.fillStyle = GLOW_COLOR;
         if(GLOW_ENABLED){
           ctx.shadowColor = GLOW_COLOR;
-          ctx.shadowBlur  = 3;
+          ctx.shadowBlur  = 4;
         }else{
-          ctx.shadowColor = 'transparent';
+          ctx.shadowColor = "transparent";
           ctx.shadowBlur  = 0;
         }
         ctx.fill();
       }
+
       ctx.globalAlpha = 1;
     }
 
@@ -708,6 +871,7 @@
       outputTextarea.value = code;
     }
 
+    // ===== СЛУШАТЕЛИ =====
     const inputs = [
       bgUrlInput,totalSecondsInput,fontNameInput,fontSizeInput,
       digitOffsetXInput,digitOffsetYInput,
@@ -722,6 +886,7 @@
     });
     generateBtn.addEventListener('click', generateCode);
 
+    // ===== СТАРТ PREVIEW =====
     let previewTimerId = null;
     function startPreviewCountdown(){
       if(previewTimerId) clearInterval(previewTimerId);
